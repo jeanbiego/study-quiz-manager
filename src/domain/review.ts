@@ -20,7 +20,7 @@ export function createInitialReviewState(studyItemId: string): ReviewState {
 
 export function getNextQuestionType(record: Pick<AnswerRecord, 'result' | 'mistakeType' | 'questionTypeUsed'>): QuestionType {
   if (record.result === 'partial' || record.mistakeType === 'wrong_character') {
-    return 'contextual_writing';
+    return 'fill_blank';
   }
 
   if (record.result === 'incorrect' || record.mistakeType === 'wrong_term') {

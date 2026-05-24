@@ -25,8 +25,8 @@ describe('updateReviewState', () => {
     expect(third.reviewState.nextReviewDate).toBe('2026-06-23');
   });
 
-  it('prioritizes contextual writing after a wrong character mistake', () => {
-    expect(getNextQuestionType(record({ result: 'partial', mistakeType: 'wrong_character' }))).toBe('contextual_writing');
+  it('prioritizes fill blank after a wrong character mistake', () => {
+    expect(getNextQuestionType(record({ result: 'partial', mistakeType: 'wrong_character' }))).toBe('fill_blank');
   });
 
   it('prioritizes short answer or fill blank after a wrong term mistake', () => {

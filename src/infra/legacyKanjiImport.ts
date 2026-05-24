@@ -117,7 +117,7 @@ function toStudyItem(row: LegacyProblemRow): StudyItem {
     answer: row.answer_kanji,
     reading: katakanaToHiragana(row.reading),
     note: 'kanji_test_generator から移行',
-    defaultQuestionType: 'contextual_writing',
+    defaultQuestionType: 'fill_blank',
     importance: incorrectCount >= 3 ? 3 : incorrectCount >= 1 ? 2 : 1,
     status: 'active',
     createdAt: normalizeDate(row.created_at),
@@ -134,7 +134,7 @@ function toAnswerRecord(row: LegacyAttemptRow): AnswerRecord {
     answeredAt: normalizeDate(row.attempted_at),
     result,
     mistakeType: result === 'partial' ? 'wrong_character' : undefined,
-    questionTypeUsed: 'contextual_writing',
+    questionTypeUsed: 'fill_blank',
   };
 }
 
@@ -166,7 +166,7 @@ function ensureLegacyQuiz(quizzes: Quiz[], importedItemIds: string[], importedRe
       subjectFilter: ['japanese'],
       categoryFilter: ['漢字'],
       itemIds: importedItemIds,
-      questionTypesByItemId: Object.fromEntries(importedItemIds.map((id) => [id, 'contextual_writing'])),
+      questionTypesByItemId: Object.fromEntries(importedItemIds.map((id) => [id, 'fill_blank'])),
       scoredAt: importedRecords.at(-1)?.answeredAt,
     },
     ...quizzes,

@@ -76,7 +76,7 @@ export const SUBJECT_LABELS: Record<Subject, string> = {
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
   short_answer: '一問一答',
   fill_blank: '穴埋め',
-  contextual_writing: '文中書き取り',
+  contextual_writing: '穴埋め',
 };
 
 export const RESULT_LABELS: Record<Result, string> = {
