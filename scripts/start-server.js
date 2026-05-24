@@ -1,0 +1,114 @@
+#!/usr/bin/env node
+
+import { createServer } from 'node:http';
+import { createReadStream, existsSync, statSync } from 'node:fs';
+import { dirname, extname, join, normalize, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const DEFAULT_HOST = '127.0.0.1';
+const DEFAULT_PORT = 4174;
+const MAX_PORT = 4199;
+const RESERVED_PORTS = new Set([4173]);
+const DIST_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../dist');
+
+const mimeTypes = new Map([
+  ['.css', 'text/css; charset=utf-8'],
+  ['.gif', 'image/gif'],
+  ['.html', 'text/html; charset=utf-8'],
+  ['.ico', 'image/x-icon'],
+  ['.jpeg', 'image/jpeg'],
+  ['.jpg', 'image/jpeg'],
+  ['.js', 'application/javascript; charset=utf-8'],
+  ['.json', 'application/json; charset=utf-8'],
+  ['.png', 'image/png'],
+  ['.svg', 'image/svg+xml; charset=utf-8'],
+  ['.ttf', 'font/ttf'],
+  ['.wasm', 'application/wasm'],
+  ['.woff', 'font/woff'],
+  ['.woff2', 'font/woff2'],
+]);
+
+const requestedPort = Number(process.env.STUDY_QUIZ_MANAGER_PORT ?? process.argv[2] ?? DEFAULT_PORT);
+const host = process.env.STUDY_QUIZ_MANAGER_HOST ?? DEFAULT_HOST;
+
+if (!existsSync(DIST_DIR)) {
+  console.error('dist directory does not exist. Run `npm run build` first.');
+  process.exit(1);
+}
+
+startServer(findCandidatePort(requestedPort));
+
+function startServer(port) {
+  const server = createServer(handleRequest);
+
+  server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE' && port < MAX_PORT) {
+      const nextPort = findCandidatePort(port + 1);
+      console.warn(`Port ${port} is already in use. Trying ${nextPort}.`);
+      startServer(nextPort);
+      return;
+    }
+
+    console.error(error);
+    process.exit(1);
+  });
+
+  server.listen(port, host, () => {
+    console.log(`Study Quiz Manager is running at http://${host}:${port}`);
+    console.log(`Serving files from ${DIST_DIR}`);
+  });
+
+  process.on('SIGINT', () => shutdown(server));
+  process.on('SIGTERM', () => shutdown(server));
+}
+
+function handleRequest(request, response) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    response.writeHead(405, { Allow: 'GET, HEAD' });
+    response.end();
+    return;
+  }
+
+  const filePath = resolveRequestedPath(request.url ?? '/');
+  const targetPath = existsSync(filePath) && statSync(filePath).isFile() ? filePath : join(DIST_DIR, 'index.html');
+  const contentType = mimeTypes.get(extname(targetPath).toLowerCase()) ?? 'application/octet-stream';
+
+  response.writeHead(200, {
+    'Cache-Control': targetPath.endsWith('index.html') ? 'no-cache' : 'public, max-age=3600',
+    'Content-Type': contentType,
+  });
+
+  if (request.method === 'HEAD') {
+    response.end();
+    return;
+  }
+
+  createReadStream(targetPath).pipe(response);
+}
+
+function resolveRequestedPath(url) {
+  const pathname = new URL(url, 'http://localhost').pathname;
+  const decodedPath = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
+  const normalizedPath = normalize(decodedPath).replace(/^([/\\])+/, '');
+  const resolvedPath = resolve(DIST_DIR, normalizedPath);
+
+  if (!resolvedPath.startsWith(DIST_DIR)) {
+    return join(DIST_DIR, 'index.html');
+  }
+
+  return resolvedPath;
+}
+
+function findCandidatePort(port) {
+  let candidate = Number.isInteger(port) && port > 0 ? port : DEFAULT_PORT;
+  while (RESERVED_PORTS.has(candidate)) {
+    candidate += 1;
+  }
+  return candidate;
+}
+
+function shutdown(server) {
+  server.close(() => {
+    process.exit(0);
+  });
+}
