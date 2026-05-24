@@ -1,4 +1,4 @@
-import { Printer } from 'lucide-react';
+import { Filter, Printer, Shuffle } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { selectQuizItems } from '../../domain/quizSelection';
@@ -6,6 +6,7 @@ import type { QuizOrder, QuizTarget } from '../../domain/quizSelection';
 import { QUESTION_TYPE_LABELS, SUBJECT_LABELS } from '../../domain/types';
 import type { Subject } from '../../domain/types';
 import { createId } from '../../infra/id';
+import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { Field, SelectInput } from '../../ui/FormField';
 import { useAppDataContext } from '../AppDataContext';
@@ -58,12 +59,21 @@ export function QuizBuilderPage() {
 
   return (
     <form className="grid gap-5" onSubmit={createQuiz}>
-      <div>
-        <h2 className="text-2xl font-semibold">小テスト作成</h2>
-        <p className="text-sm text-slate-500">未復習・ミス優先で出題候補を自動選出します。</p>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Quiz Builder</p>
+          <h2 className="text-3xl font-semibold tracking-tight">小テスト作成</h2>
+          <p className="mt-1 text-sm text-slate-500">復習状態に応じて候補を選び、印刷用ページを作成します。</p>
+        </div>
+        <Badge tone="amber" className="self-start">{selectedItems.length}件選出</Badge>
       </div>
 
-      <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-5">
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <Filter size={16} />
+          出題条件
+        </div>
+        <div className="grid gap-4 md:grid-cols-5">
         <Field label="科目">
           <SelectInput value={subject} onChange={(event) => setSubject(event.target.value as Subject | '')}>
             <option value="">全科目</option>
@@ -108,31 +118,35 @@ export function QuizBuilderPage() {
             <option value="random">ランダム</option>
           </SelectInput>
         </Field>
+        </div>
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white">
-        <div className="flex items-center justify-between border-b border-slate-200 p-4">
+      <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-100 p-4">
           <div>
-            <h3 className="font-semibold">出題候補</h3>
-            <p className="text-sm text-slate-500">{selectedItems.length}件選出</p>
+            <h3 className="flex items-center gap-2 font-semibold">
+              <Shuffle size={16} />
+              出題候補
+            </h3>
+            <p className="text-sm text-slate-500">上から順に印刷用テストへ入ります。</p>
           </div>
           <Button disabled={!selectedItems.length}>
             <Printer size={16} />
             印刷用ページを作る
           </Button>
         </div>
-        <ol className="divide-y divide-slate-200">
+        <ol className="divide-y divide-slate-100">
           {selectedItems.map(({ item, questionType, priorityScore }, index) => (
-            <li key={item.id} className="grid gap-1 p-4 md:grid-cols-[40px_1fr_160px_100px] md:items-center">
-              <span className="text-sm text-slate-500">{index + 1}</span>
+            <li key={item.id} className="grid gap-2 p-4 hover:bg-slate-50/70 md:grid-cols-[40px_1fr_160px_110px] md:items-center">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
               <div>
                 <p className="font-medium">{item.title}</p>
                 <p className="text-sm text-slate-500">
                   {SUBJECT_LABELS[item.subject]} / {item.category}
                 </p>
               </div>
-              <span className="text-sm">{QUESTION_TYPE_LABELS[questionType]}</span>
-              <span className="text-sm text-slate-500">優先度 {priorityScore}</span>
+              <Badge tone={questionType === 'contextual_writing' ? 'amber' : 'slate'}>{QUESTION_TYPE_LABELS[questionType]}</Badge>
+              <span className="text-sm font-medium text-slate-500">優先度 {priorityScore}</span>
             </li>
           ))}
         </ol>
