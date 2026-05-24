@@ -1,6 +1,6 @@
 import type { AppData } from '../domain/types';
-import legacyAttemptsCsv from '../../data/attempts.csv?raw';
-import legacyProblemsCsv from '../../data/problems.csv?raw';
+import legacyAttemptsCsv from './legacy-data/attempts.csv?raw';
+import legacyProblemsCsv from './legacy-data/problems.csv?raw';
 import { importLegacyKanjiData } from './legacyKanjiImport';
 
 const STORAGE_KEY = 'study-quiz-manager:data:v1';
