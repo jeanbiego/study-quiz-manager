@@ -14,7 +14,7 @@ const navItems = [
   { to: '/items/new', label: '新規登録', icon: BookOpen },
   { to: '/quiz/new', label: '小テスト作成', icon: Printer },
   { to: '/quizzes', label: '小テスト履歴', icon: ClipboardList },
-  { to: '/', label: 'クイズ', icon: ListChecks },
+  { to: '/', label: 'クイズ一覧', icon: ListChecks },
   { to: '/backup', label: 'バックアップ', icon: Database },
 ];
 
