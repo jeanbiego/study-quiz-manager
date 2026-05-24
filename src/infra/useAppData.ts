@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AppData } from '../domain/types';
-import { EMPTY_APP_DATA, loadAppData, normalizeAppData, saveAppData } from './storage';
+import { EMPTY_APP_DATA, loadAppData, normalizeImportedAppData, saveAppData } from './storage';
 
 export function useAppData() {
   const [data, setData] = useState<AppData>(() => {
@@ -16,7 +16,7 @@ export function useAppData() {
   }, [data]);
 
   const replaceData = useCallback((nextData: unknown) => {
-    setData(normalizeAppData(nextData));
+    setData(normalizeImportedAppData(nextData));
   }, []);
 
   return useMemo(
