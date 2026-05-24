@@ -45,9 +45,9 @@ src/
 ## Domain Rules
 
 - 対象科目は `japanese`、`science`、`social`。
-- 出題形式は `short_answer`、`fill_blank`、`contextual_writing`。
+- 出題形式は `short_answer`、`fill_blank`。既存データ互換のため `contextual_writing` が残る場合は、表示・出題とも `fill_blank` と同等に扱う。
 - 採点結果は `correct`、`partial`、`incorrect`。
-- `partial` のミス種別は `wrong_character` とし、次回は文中書き取りを優先する。
+- `partial` のミス種別は `wrong_character` とし、次回は穴埋めを優先する。
 - `incorrect` のミス種別は `wrong_term` とし、次回は一問一答または穴埋めを優先する。
 - `mastered` と `paused` の項目は通常の小テスト候補から除外する。
 - 優先度計算では、期限超過、`max(0, mistakeCount - correctCount)`、直近ミス、重要度を考慮する。
@@ -58,7 +58,7 @@ src/
 
 - 正解時に次回出題日が延びる。
 - 連続正解で出題間隔が `7日 -> 14日 -> 30日` と伸び、安定後に `mastered` 扱いになる。
-- `wrong_character` で次回の出題形式が `contextual_writing` になる。
+- `wrong_character` で次回の出題形式が `fill_blank` になる。
 - `wrong_term` で次回の出題形式が `short_answer` または `fill_blank` になる。
 - `max(0, mistakeCount - correctCount)` が苦手度として優先度に反映される。
 - `nextReviewDate` が今日以前の項目が優先される。
