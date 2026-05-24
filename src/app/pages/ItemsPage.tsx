@@ -1,11 +1,13 @@
-import { Edit3, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, CalendarClock, CheckCircle2, Edit3, Layers3, Plus, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { toDateOnly } from '../../domain/date';
 import { SUBJECT_LABELS, QUESTION_TYPE_LABELS } from '../../domain/types';
-import type { Subject } from '../../domain/types';
+import type { Result, StudyItem, Subject } from '../../domain/types';
+import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { SelectInput, TextInput } from '../../ui/FormField';
 import { useAppDataContext } from '../AppDataContext';
-import { useMemo, useState } from 'react';
 
 export function ItemsPage() {
   const { data, setData } = useAppDataContext();
@@ -15,6 +17,14 @@ export function ItemsPage() {
 
   const stateByItemId = useMemo(() => new Map(data.reviewStates.map((state) => [state.studyItemId, state])), [data.reviewStates]);
   const categories = useMemo(() => [...new Set(data.studyItems.map((item) => item.category).filter(Boolean))].sort(), [data.studyItems]);
+  const today = toDateOnly(new Date());
+  const activeCount = data.studyItems.filter((item) => item.status === 'active').length;
+  const dueCount = data.studyItems.filter((item) => {
+    const reviewState = stateByItemId.get(item.id);
+    return item.status === 'active' && (!reviewState?.nextReviewDate || reviewState.nextReviewDate <= today);
+  }).length;
+  const mistakeCount = data.reviewStates.filter((state) => state.mistakeCount > 0 || state.lastResult === 'partial' || state.lastResult === 'incorrect').length;
+  const masteredCount = data.studyItems.filter((item) => item.status === 'mastered').length;
 
   const filteredItems = data.studyItems.filter((item) => {
     const queryTarget = `${item.title} ${item.questionText} ${item.answer} ${item.category} ${item.unit ?? ''}`.toLowerCase();
@@ -46,8 +56,9 @@ export function ItemsPage() {
     <section className="grid gap-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">知識項目</h2>
-          <p className="text-sm text-slate-500">{data.studyItems.length}件登録済み</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Knowledge Items</p>
+          <h2 className="text-3xl font-semibold tracking-tight">知識項目</h2>
+          <p className="mt-1 text-sm text-slate-500">{data.studyItems.length}件登録済み。復習候補を検索・整理します。</p>
         </div>
         <Link to="/items/new">
           <Button>
@@ -57,7 +68,14 @@ export function ItemsPage() {
         </Link>
       </div>
 
-      <div className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-[1fr_160px_180px]">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatCard icon={Layers3} label="有効項目" value={activeCount} tone="emerald" />
+        <StatCard icon={CalendarClock} label="出題対象" value={dueCount} tone="amber" />
+        <StatCard icon={AlertTriangle} label="ミス履歴あり" value={mistakeCount} tone="rose" />
+        <StatCard icon={CheckCircle2} label="定着" value={masteredCount} tone="sky" />
+      </div>
+
+      <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_160px_180px]">
         <TextInput placeholder="タイトル、問題文、正解で検索" value={query} onChange={(event) => setQuery(event.target.value)} />
         <SelectInput value={subject} onChange={(event) => setSubject(event.target.value as Subject | '')}>
           <option value="">全科目</option>
@@ -77,9 +95,9 @@ export function ItemsPage() {
         </SelectInput>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-          <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-500">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-4 py-3">科目</th>
               <th className="px-4 py-3">カテゴリ</th>
@@ -96,23 +114,27 @@ export function ItemsPage() {
             {filteredItems.map((item) => {
               const reviewState = stateByItemId.get(item.id);
               return (
-                <tr key={item.id} className="border-t border-slate-200">
-                  <td className="px-4 py-3">{SUBJECT_LABELS[item.subject]}</td>
-                  <td className="px-4 py-3">{item.category}</td>
+                <tr key={item.id} className="border-t border-slate-100 hover:bg-slate-50/70">
+                  <td className="px-4 py-3">
+                    <Badge tone={getSubjectTone(item.subject)}>{SUBJECT_LABELS[item.subject]}</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-slate-600">{item.category}</td>
                   <td className="px-4 py-3 font-medium">{item.title}</td>
                   <td className="px-4 py-3">{item.answer}</td>
-                  <td className="px-4 py-3">{QUESTION_TYPE_LABELS[item.defaultQuestionType]}</td>
+                  <td className="px-4 py-3 text-slate-600">{QUESTION_TYPE_LABELS[item.defaultQuestionType]}</td>
                   <td className="px-4 py-3">{reviewState?.nextReviewDate ?? '未復習'}</td>
-                  <td className="px-4 py-3">{item.status}</td>
-                  <td className="px-4 py-3">{reviewState?.lastResult ?? '-'}</td>
+                  <td className="px-4 py-3">
+                    <Badge tone={item.status === 'active' ? 'emerald' : item.status === 'mastered' ? 'sky' : 'slate'}>{item.status}</Badge>
+                  </td>
+                  <td className="px-4 py-3">{reviewState?.lastResult ? <ResultBadge result={reviewState.lastResult} /> : '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <Link to={`/items/${item.id}/edit`}>
-                        <Button variant="secondary" title="編集">
+                        <Button variant="secondary" size="icon" title="編集">
                           <Edit3 size={15} />
                         </Button>
                       </Link>
-                      <Button variant="danger" title="削除" onClick={() => deleteItem(item.id)}>
+                      <Button variant="danger" size="icon" title="削除" onClick={() => deleteItem(item.id)}>
                         <Trash2 size={15} />
                       </Button>
                     </div>
@@ -126,4 +148,54 @@ export function ItemsPage() {
       </div>
     </section>
   );
+}
+
+type StatCardProps = {
+  icon: typeof Layers3;
+  label: string;
+  value: number;
+  tone: 'emerald' | 'amber' | 'rose' | 'sky';
+};
+
+const statToneClasses: Record<StatCardProps['tone'], string> = {
+  emerald: 'bg-emerald-50 text-emerald-700 ring-emerald-100',
+  amber: 'bg-amber-50 text-amber-700 ring-amber-100',
+  rose: 'bg-rose-50 text-rose-700 ring-rose-100',
+  sky: 'bg-sky-50 text-sky-700 ring-sky-100',
+};
+
+function StatCard({ icon: Icon, label, value, tone }: StatCardProps) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className={`mb-3 grid h-9 w-9 place-items-center rounded-lg ring-1 ${statToneClasses[tone]}`}>
+        <Icon size={18} />
+      </div>
+      <p className="text-2xl font-semibold tracking-tight">{value}</p>
+      <p className="text-sm text-slate-500">{label}</p>
+    </div>
+  );
+}
+
+function ResultBadge({ result }: { result: Result }) {
+  if (result === 'correct') {
+    return <Badge tone="emerald">正解</Badge>;
+  }
+
+  if (result === 'partial') {
+    return <Badge tone="amber">字が違う</Badge>;
+  }
+
+  return <Badge tone="rose">違う言葉</Badge>;
+}
+
+function getSubjectTone(subject: StudyItem['subject']) {
+  if (subject === 'japanese') {
+    return 'rose';
+  }
+
+  if (subject === 'science') {
+    return 'emerald';
+  }
+
+  return 'sky';
 }

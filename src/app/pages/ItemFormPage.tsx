@@ -1,4 +1,4 @@
-import { Save } from 'lucide-react';
+import { Eye, Save } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { renderQuestionText } from '../../domain/question';
@@ -101,8 +101,9 @@ export function ItemFormPage() {
     <form className="grid gap-5" onSubmit={submit}>
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">{existingItem ? '知識項目を編集' : '知識項目を登録'}</h2>
-          <p className="text-sm text-slate-500">復習したい知識と代表問題を登録します。</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Item Editor</p>
+          <h2 className="text-3xl font-semibold tracking-tight">{existingItem ? '知識項目を編集' : '知識項目を登録'}</h2>
+          <p className="mt-1 text-sm text-slate-500">復習したい知識と代表問題を登録します。</p>
         </div>
         <div className="flex gap-2">
           <Link to="/">
@@ -117,7 +118,7 @@ export function ItemFormPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-2">
+      <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-2">
         <Field label="科目">
           <SelectInput value={form.subject} onChange={(event) => update('subject', event.target.value as Subject)}>
             {Object.entries(SUBJECT_LABELS).map(([value, label]) => (
@@ -171,8 +172,11 @@ export function ItemFormPage() {
         <Field label="メモ">
           <TextArea value={form.note} onChange={(event) => update('note', event.target.value)} />
         </Field>
-        <div className="rounded-lg bg-slate-100 p-4">
-          <h3 className="mb-2 text-sm font-semibold">問題文プレビュー</h3>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Eye size={16} />
+            問題文プレビュー
+          </h3>
           <p className="text-base leading-7">{renderQuestionText(previewItem, form.defaultQuestionType) || '問題文を入力してください。'}</p>
           <p className="mt-4 text-sm text-slate-500">答え: {form.answer || '-'}</p>
         </div>

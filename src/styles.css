@@ -7,6 +7,22 @@
 
 body {
   margin: 0;
+  min-width: 320px;
+  background:
+    linear-gradient(180deg, rgba(241, 245, 249, 0.72), rgba(248, 250, 252, 1) 280px),
+    #f8fafc;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: #bbf7d0;
+  color: #0f172a;
 }
 
 @media print {

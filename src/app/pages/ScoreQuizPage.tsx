@@ -5,6 +5,7 @@ import { updateReviewState } from '../../domain/review';
 import { RESULT_LABELS } from '../../domain/types';
 import type { AnswerRecord, Result } from '../../domain/types';
 import { createId } from '../../infra/id';
+import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { useAppDataContext } from '../AppDataContext';
 
@@ -70,8 +71,9 @@ export function ScoreQuizPage() {
     <section className="grid gap-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold">採点入力</h2>
-          <p className="text-sm text-slate-500">{quiz.title}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Scoring</p>
+          <h2 className="text-3xl font-semibold tracking-tight">採点入力</h2>
+          <p className="mt-1 text-sm text-slate-500">{quiz.title}</p>
         </div>
         <div className="flex gap-2">
           <Link to={`/quizzes/${quiz.id}/print`}>
@@ -86,9 +88,9 @@ export function ScoreQuizPage() {
 
       <ol className="grid gap-3">
         {items.map((item, index) => (
-          <li key={item.id} className="rounded-lg border border-slate-200 bg-white p-4">
+          <li key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="grid gap-3 md:grid-cols-[40px_1fr_auto] md:items-center">
-              <span className="text-sm text-slate-500">{index + 1}</span>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
               <div>
                 <p className="font-medium">{item.title}</p>
                 <p className="text-sm text-slate-500">正解: {item.answer}</p>
@@ -106,6 +108,13 @@ export function ScoreQuizPage() {
                 ))}
               </div>
             </div>
+            {results[item.id] ? (
+              <div className="mt-3 md:ml-10">
+                <Badge tone={results[item.id] === 'correct' ? 'emerald' : results[item.id] === 'partial' ? 'amber' : 'rose'}>
+                  {RESULT_LABELS[results[item.id]]}
+                </Badge>
+              </div>
+            ) : null}
           </li>
         ))}
       </ol>
