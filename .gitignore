@@ -6,6 +6,6 @@ coverage
 *.tsbuildinfo
 node_modules/.tmp
 .vite
-data/*.backup
-data/*.backup.csv
-data/*before_fix*.csv
+src/infra/legacy-data/local-backups/*.backup
+src/infra/legacy-data/local-backups/*.backup.csv
+src/infra/legacy-data/local-backups/*before_fix*.csv
