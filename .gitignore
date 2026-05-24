@@ -5,6 +5,7 @@ coverage
 *.local
 *.tsbuildinfo
 node_modules/.tmp
+.vite
 data/*.backup
 data/*.backup.csv
 data/*before_fix*.csv

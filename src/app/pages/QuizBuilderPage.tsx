@@ -2,6 +2,7 @@ import { Printer } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { selectQuizItems } from '../../domain/quizSelection';
+import type { QuizOrder, QuizTarget } from '../../domain/quizSelection';
 import { QUESTION_TYPE_LABELS, SUBJECT_LABELS } from '../../domain/types';
 import type { Subject } from '../../domain/types';
 import { createId } from '../../infra/id';
@@ -15,7 +16,8 @@ export function QuizBuilderPage() {
   const [subject, setSubject] = useState<Subject | ''>('');
   const [category, setCategory] = useState('');
   const [count, setCount] = useState(10);
-  const [dueOnly, setDueOnly] = useState(false);
+  const [target, setTarget] = useState<QuizTarget>('all_active');
+  const [order, setOrder] = useState<QuizOrder>('priority');
 
   const categories = useMemo(() => [...new Set(data.studyItems.map((item) => item.category).filter(Boolean))].sort(), [data.studyItems]);
   const subjects = subject ? [subject] : undefined;
@@ -24,7 +26,8 @@ export function QuizBuilderPage() {
     subjects,
     categories: categoriesFilter,
     count,
-    dueOnly,
+    target,
+    order,
   });
 
   function createQuiz(event: FormEvent) {
@@ -60,7 +63,7 @@ export function QuizBuilderPage() {
         <p className="text-sm text-slate-500">未復習・ミス優先で出題候補を自動選出します。</p>
       </div>
 
-      <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-4">
+      <div className="grid gap-4 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-5">
         <Field label="科目">
           <SelectInput value={subject} onChange={(event) => setSubject(event.target.value as Subject | '')}>
             <option value="">全科目</option>
@@ -90,10 +93,21 @@ export function QuizBuilderPage() {
             ))}
           </SelectInput>
         </Field>
-        <label className="flex items-center gap-2 self-end rounded-md border border-slate-200 px-3 py-2 text-sm">
-          <input type="checkbox" checked={dueOnly} onChange={(event) => setDueOnly(event.target.checked)} />
-          期限到来のみ
-        </label>
+        <Field label="出題対象">
+          <SelectInput value={target} onChange={(event) => setTarget(event.target.value as QuizTarget)}>
+            <option value="all_active">有効な項目すべて</option>
+            <option value="due">期限到来のみ</option>
+            <option value="unreviewed">未復習のみ</option>
+            <option value="mistakes">ミスありのみ</option>
+          </SelectInput>
+        </Field>
+        <Field label="出題順">
+          <SelectInput value={order} onChange={(event) => setOrder(event.target.value as QuizOrder)}>
+            <option value="priority">優先度順</option>
+            <option value="oldest_updated">古い更新順</option>
+            <option value="random">ランダム</option>
+          </SelectInput>
+        </Field>
       </div>
 
       <section className="rounded-lg border border-slate-200 bg-white">
