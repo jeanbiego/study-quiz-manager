@@ -1,6 +1,10 @@
 import type { AppData } from '../domain/types';
+import legacyAttemptsCsv from '../../data/attempts.csv?raw';
+import legacyProblemsCsv from '../../data/problems.csv?raw';
+import { importLegacyKanjiData } from './legacyKanjiImport';
 
 const STORAGE_KEY = 'study-quiz-manager:data:v1';
+const LEGACY_KANJI_MIGRATION_KEY = 'study-quiz-manager:migration:legacy-kanji-generator:v1';
 
 export const EMPTY_APP_DATA: AppData = {
   schemaVersion: 1,
@@ -13,13 +17,13 @@ export const EMPTY_APP_DATA: AppData = {
 export function loadAppData(): AppData {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
-    return EMPTY_APP_DATA;
+    return runLegacyKanjiMigration(EMPTY_APP_DATA);
   }
 
   try {
-    return normalizeAppData(JSON.parse(raw));
+    return runLegacyKanjiMigration(normalizeAppData(JSON.parse(raw)));
   } catch {
-    return EMPTY_APP_DATA;
+    return runLegacyKanjiMigration(EMPTY_APP_DATA);
   }
 }
 
@@ -40,4 +44,15 @@ export function normalizeAppData(value: unknown): AppData {
     quizzes: Array.isArray(candidate.quizzes) ? candidate.quizzes : [],
     answerRecords: Array.isArray(candidate.answerRecords) ? candidate.answerRecords : [],
   };
+}
+
+function runLegacyKanjiMigration(data: AppData): AppData {
+  if (localStorage.getItem(LEGACY_KANJI_MIGRATION_KEY)) {
+    return data;
+  }
+
+  const { data: migrated } = importLegacyKanjiData(data, legacyProblemsCsv, legacyAttemptsCsv);
+  localStorage.setItem(LEGACY_KANJI_MIGRATION_KEY, new Date().toISOString());
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+  return migrated;
 }
