@@ -60,4 +60,59 @@ describe('selectQuizItems', () => {
     expect(selected[0].item.id).toBe('item_2');
     expect(selected[0].questionType).toBe('short_answer');
   });
+
+  it('can target only unreviewed items', () => {
+    const selected = selectQuizItems(
+      [baseItem, { ...baseItem, id: 'item_2', title: '桓武天皇' }],
+      [
+        {
+          studyItemId: 'item_1',
+          lastReviewedAt: '2026-05-20',
+          nextReviewDate: '2026-05-27',
+          correctCount: 1,
+          mistakeCount: 0,
+          consecutiveCorrectCount: 1,
+        },
+      ],
+      { count: 10, target: 'unreviewed', today: new Date('2026-05-24T00:00:00') },
+    );
+
+    expect(selected.map(({ item }) => item.id)).toEqual(['item_2']);
+  });
+
+  it('can target items with mistakes', () => {
+    const selected = selectQuizItems(
+      [baseItem, { ...baseItem, id: 'item_2', title: '桓武天皇' }],
+      [
+        {
+          studyItemId: 'item_1',
+          correctCount: 2,
+          mistakeCount: 0,
+          consecutiveCorrectCount: 2,
+        },
+        {
+          studyItemId: 'item_2',
+          correctCount: 1,
+          mistakeCount: 1,
+          consecutiveCorrectCount: 0,
+        },
+      ],
+      { count: 10, target: 'mistakes', today: new Date('2026-05-24T00:00:00') },
+    );
+
+    expect(selected.map(({ item }) => item.id)).toEqual(['item_2']);
+  });
+
+  it('can order by oldest updated item first', () => {
+    const selected = selectQuizItems(
+      [
+        { ...baseItem, id: 'item_1', updatedAt: '2026-05-20T00:00:00.000Z' },
+        { ...baseItem, id: 'item_2', updatedAt: '2026-05-01T00:00:00.000Z' },
+      ],
+      [],
+      { count: 10, order: 'oldest_updated', today: new Date('2026-05-24T00:00:00') },
+    );
+
+    expect(selected.map(({ item }) => item.id)).toEqual(['item_2', 'item_1']);
+  });
 });
