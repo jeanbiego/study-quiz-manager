@@ -28,12 +28,12 @@ describe('importLegacyKanjiData', () => {
       category: '漢字',
       answer: '明石市',
       reading: 'あかしし',
-      defaultQuestionType: 'contextual_writing',
+      defaultQuestionType: 'fill_blank',
     });
     expect(data.answerRecords[0]).toMatchObject({
       result: 'partial',
       mistakeType: 'wrong_character',
-      questionTypeUsed: 'contextual_writing',
+      questionTypeUsed: 'fill_blank',
     });
     expect(data.reviewStates.find((state) => state.studyItemId === 'legacy-kanji-problem-1')).toMatchObject({
       correctCount: 1,

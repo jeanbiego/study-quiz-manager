@@ -80,6 +80,25 @@ describe('selectQuizItems', () => {
     expect(selected[0].questionType).toBe('fill_blank');
   });
 
+  it('uses fill-blank after a wrong-character mistake', () => {
+    const selected = selectQuizItems(
+      [baseItem],
+      [
+        {
+          studyItemId: 'item_1',
+          correctCount: 0,
+          mistakeCount: 1,
+          consecutiveCorrectCount: 0,
+          lastResult: 'partial',
+          lastMistakeType: 'wrong_character',
+        },
+      ],
+      { count: 1, today: new Date('2026-05-24T00:00:00') },
+    );
+
+    expect(selected[0].questionType).toBe('fill_blank');
+  });
+
   it('can target only unreviewed items', () => {
     const selected = selectQuizItems(
       [baseItem, { ...baseItem, id: 'item_2', title: '桓武天皇' }],

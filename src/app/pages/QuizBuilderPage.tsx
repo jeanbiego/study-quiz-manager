@@ -148,7 +148,7 @@ export function QuizBuilderPage() {
                   <span className="text-sm text-slate-500">{getStudyItemUnit(item)}</span>
                 </div>
               </div>
-              <Badge tone={questionType === 'contextual_writing' ? 'amber' : 'slate'}>{QUESTION_TYPE_LABELS[questionType]}</Badge>
+              <Badge tone={questionType === 'fill_blank' || questionType === 'contextual_writing' ? 'amber' : 'slate'}>{QUESTION_TYPE_LABELS[questionType]}</Badge>
               <span className="text-sm font-medium text-slate-500">優先度 {priorityScore}</span>
             </li>
           ))}
