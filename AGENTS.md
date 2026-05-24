@@ -91,12 +91,29 @@ npm run build
 - Branch prefix for Codex work: `codex/`
 - Default PR mode: draft PR
 - Default merge method: squash merge
+- Default expectation for implementation work: work on an appropriate branch, open a PR, wait for CI, check reviews, address actionable feedback, and merge when the stated merge conditions are satisfied.
 
 現在のリポジトリが空、または remote default branch が未設定の場合があります。その場合は初回コミットで `main` を作り、以後のPR baseとして `main` を使います。
 
+## Branch Selection
+
+作業開始時は、必ず現在のブランチとリモート状態を確認します。
+
+```powershell
+git status -sb
+git branch --show-current
+git remote -v
+```
+
+- `main`、`master`、remote default branch 上で実装を始めない。作業内容に合わせて `codex/<short-description>` を作る。
+- 既に `codex/` ブランチ上にいて、そのブランチのPRが今回の作業範囲と一致する場合は、そのブランチを継続してよい。
+- 既に `codex/` ブランチ上でも、既存PRと無関係な作業なら新しい `codex/<short-description>` ブランチを作る。
+- ユーザー作業や未追跡ファイルが混在する場合は、作業対象だけを明示的にstageする。
+- base branch は原則として remote default branch を使う。remote default branch が未設定の空リポジトリでは、最初に `main` を初期化してpushする。
+
 ## PR-To-Merge Workflow
 
-ユーザーが「PR作成」「CI確認」「レビュー対応」「マージ」までの自走を依頼した場合は、この手順で進めます。
+実装作業では、特に指定がない限り、この手順でPR、CI、レビュー確認、マージまで通すことを目標にします。ユーザーが「マージまで」「自走して」と依頼した場合は、マージ条件を満たした時点でマージまで進めます。
 
 1. 作業範囲を確認する。
    - `git status -sb` と差分を確認する。
@@ -105,6 +122,7 @@ npm run build
 2. ブランチを決める。
    - `main`、`master`、remote default branch 上なら `codex/<short-description>` を作る。
    - 既に作業ブランチ上なら、ユーザー意図に反しない限りそのブランチを使う。
+   - 作業内容が現在のブランチ名や既存PRの目的とずれている場合は、新しいブランチを作る。
 3. ローカル検証を実行する。
    - 既存スクリプトがあれば `lint`、`test`、`build` を優先する。
    - 失敗した場合は原因を調べ、作業範囲内で修正して再実行する。
@@ -129,7 +147,8 @@ npm run build
    - `gh pr view <pr> --json reviewDecision,reviews,comments,statusCheckRollup,mergeStateStatus` を確認する。
    - インラインレビューや未解決スレッドが関係する場合は GraphQL API で `reviewThreads`、`isResolved`、`isOutdated` を確認する。
    - 未解決でactionableなレビュー指摘は実装で対応し、ローカル検証後にpushする。
-   - コメント返信、スレッド解決、レビュー送信は、ユーザーが明示的に許可した場合だけ行う。
+   - 対応したレビュー指摘は、修正pushと検証完了後に解決済みとしてマーキングする。
+   - コメント返信やレビュー送信は、ユーザーが明示的に許可した場合だけ行う。
 10. マージ条件を確認する。
     - 必須CIが成功している。
     - blocking review、requested changes、未解決のactionable threadがない。
@@ -139,6 +158,11 @@ npm run build
     - 通常は `gh pr merge <pr> --squash --delete-branch` を使う。
     - 必須チェック待ちでauto-mergeが適切な場合のみ、ユーザー許可の範囲で `--auto` を使う。
     - マージ後にローカル `main` を更新し、作業ブランチが不要なら削除する。
+12. マージ後レビューを確認する。
+    - レビューやコメントはマージ後につくことがあるため、直近のmerged PRだけでなく、過去PRも適切にさかのぼって確認する。
+    - 目安として、現在作業に関連するPR、直近10件のmerged PR、未解決レビューが残っているPRを確認対象にする。
+    - マージ後にactionableな指摘が見つかった場合は、新しい `codex/<short-description>` ブランチで対応PRを作る。
+    - 対応後はCIとレビュー確認を再度通し、対応したレビュー指摘を解決済みにする。
 
 ## CI Debugging Notes
 
@@ -151,6 +175,9 @@ npm run build
 
 - レビューコメントは、actionable、informational、duplicate、outdated、resolved に分けて扱う。
 - requested changes がある場合は、該当スレッドを確認してから修正する。
+- レビューはマージ後につく場合がある。作業開始時と作業完了前に、現在のPRだけでなく関連する過去PRと直近merged PRも確認する。
+- 未解決スレッドの確認には、必要に応じて GitHub GraphQL API の `reviewThreads`、`isResolved`、`isOutdated` を使う。
+- 対応済みのactionable threadは、修正内容がpushされCIが通った後に解決済みとしてマーキングする。
 - レビュー指摘同士が矛盾する場合は、実装前にユーザーへ判断を求める。
 - 説明で済むコメントに対して、不要なコード変更をしない。
 
@@ -159,7 +186,8 @@ npm run build
 - required checks が失敗またはpendingのまま通常マージしない。
 - requested changes が残ったままマージしない。
 - merge conflict がある場合は、競合内容を確認して最小限に解消し、検証をやり直す。
-- ユーザーの明示許可がない場合、ready PR化、コメント返信、レビュー送信、スレッド解決、マージは行わない。
+- ユーザーの明示許可がない場合、ready PR化、コメント返信、レビュー送信、マージは行わない。
+- ユーザーがレビュー対応の自走を依頼している場合、対応済みスレッドの解決済みマーキングは行ってよい。
 - ユーザーが「自走してマージまで」と明示した場合は、上記条件を満たした時点でマージまで進めてよい。
 
 ## Final Report
