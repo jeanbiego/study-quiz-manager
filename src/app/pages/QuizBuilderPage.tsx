@@ -3,29 +3,31 @@ import { FormEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { selectQuizItems } from '../../domain/quizSelection';
 import type { QuizOrder, QuizTarget } from '../../domain/quizSelection';
+import { getStudyItemSummary, getStudyItemUnit } from '../../domain/studyItemDisplay';
 import { QUESTION_TYPE_LABELS, SUBJECT_LABELS } from '../../domain/types';
 import type { Subject } from '../../domain/types';
 import { createId } from '../../infra/id';
 import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { Field, SelectInput } from '../../ui/FormField';
+import { getSubjectBadgeClass } from '../../ui/subjectColors';
 import { useAppDataContext } from '../AppDataContext';
 
 export function QuizBuilderPage() {
   const navigate = useNavigate();
   const { data, setData } = useAppDataContext();
   const [subject, setSubject] = useState<Subject | ''>('');
-  const [category, setCategory] = useState('');
+  const [unit, setUnit] = useState('');
   const [count, setCount] = useState(10);
   const [target, setTarget] = useState<QuizTarget>('all_active');
   const [order, setOrder] = useState<QuizOrder>('priority');
 
-  const categories = useMemo(() => [...new Set(data.studyItems.map((item) => item.category).filter(Boolean))].sort(), [data.studyItems]);
+  const units = useMemo(() => [...new Set(data.studyItems.map((item) => getStudyItemUnit(item)).filter(Boolean))].sort(), [data.studyItems]);
   const subjects = subject ? [subject] : undefined;
-  const categoriesFilter = category ? [category] : undefined;
+  const unitsFilter = unit ? [unit] : undefined;
   const selectedItems = selectQuizItems(data.studyItems, data.reviewStates, {
     subjects,
-    categories: categoriesFilter,
+    categories: unitsFilter,
     count,
     target,
     order,
@@ -47,7 +49,7 @@ export function QuizBuilderPage() {
           createdAt: now,
           title: `${new Date().toLocaleDateString('ja-JP')} 小テスト`,
           subjectFilter: subjects,
-          categoryFilter: categoriesFilter,
+          categoryFilter: unitsFilter,
           itemIds: selectedItems.map(({ item }) => item.id),
           questionTypesByItemId: Object.fromEntries(selectedItems.map(({ item, questionType }) => [item.id, questionType])),
         },
@@ -84,10 +86,10 @@ export function QuizBuilderPage() {
             ))}
           </SelectInput>
         </Field>
-        <Field label="カテゴリ">
-          <SelectInput value={category} onChange={(event) => setCategory(event.target.value)}>
-            <option value="">全カテゴリ</option>
-            {categories.map((value) => (
+        <Field label="単元">
+          <SelectInput value={unit} onChange={(event) => setUnit(event.target.value)}>
+            <option value="">全単元</option>
+            {units.map((value) => (
               <option key={value} value={value}>
                 {value}
               </option>
@@ -140,10 +142,11 @@ export function QuizBuilderPage() {
             <li key={item.id} className="grid gap-2 p-4 hover:bg-slate-50/70 md:grid-cols-[40px_1fr_160px_110px] md:items-center">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
               <div>
-                <p className="font-medium">{item.title}</p>
-                <p className="text-sm text-slate-500">
-                  {SUBJECT_LABELS[item.subject]} / {item.category}
-                </p>
+                <p className="font-medium">{getStudyItemSummary(item)}</p>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  <Badge className={getSubjectBadgeClass(item.subject)}>{SUBJECT_LABELS[item.subject]}</Badge>
+                  <span className="text-sm text-slate-500">{getStudyItemUnit(item)}</span>
+                </div>
               </div>
               <Badge tone={questionType === 'contextual_writing' ? 'amber' : 'slate'}>{QUESTION_TYPE_LABELS[questionType]}</Badge>
               <span className="text-sm font-medium text-slate-500">優先度 {priorityScore}</span>

@@ -2,6 +2,7 @@ import { Save } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { updateReviewState } from '../../domain/review';
+import { getStudyItemSummary } from '../../domain/studyItemDisplay';
 import { RESULT_LABELS } from '../../domain/types';
 import type { AnswerRecord, Result } from '../../domain/types';
 import { createId } from '../../infra/id';
@@ -92,7 +93,7 @@ export function ScoreQuizPage() {
             <div className="grid gap-3 md:grid-cols-[40px_1fr_auto] md:items-center">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
               <div>
-                <p className="font-medium">{item.title}</p>
+                <p className="font-medium">{getStudyItemSummary(item)}</p>
                 <p className="text-sm font-medium text-slate-700">模範解答: {item.answer}</p>
                 {item.note ? <p className="text-sm text-slate-500">メモ: {item.note}</p> : null}
               </div>

@@ -1,6 +1,7 @@
 import { calculatePriorityScore, isDueForReview } from './priority';
 import { resolveQuestionType } from './question';
 import { toDateOnly } from './date';
+import { getStudyItemUnit } from './studyItemDisplay';
 import type { QuestionType, ReviewState, StudyItem, Subject } from './types';
 
 export type QuizTarget = 'all_active' | 'due' | 'unreviewed' | 'mistakes';
@@ -35,7 +36,7 @@ export function selectQuizItems(
   return items
     .filter((item) => item.status === 'active')
     .filter((item) => !options.subjects?.length || options.subjects.includes(item.subject))
-    .filter((item) => !options.categories?.length || options.categories.includes(item.category))
+    .filter((item) => !options.categories?.length || options.categories.includes(getStudyItemUnit(item)))
     .filter((item) => matchesTarget(stateByItemId.get(item.id), target, today))
     .map((item) => {
       const reviewState = stateByItemId.get(item.id);
