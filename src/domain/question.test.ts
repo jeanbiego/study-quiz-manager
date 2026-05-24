@@ -25,4 +25,8 @@ describe('renderQuestionText', () => {
   it('uses an empty blank when reading is not available', () => {
     expect(renderQuestionText(baseItem, 'fill_blank')).toBe('朝日を（　　　）。');
   });
+
+  it('uses an empty blank when reading is the same as the answer', () => {
+    expect(renderQuestionText({ ...baseItem, answer: '太陽', questionText: '太陽が昇る。', reading: '太陽' }, 'fill_blank')).toBe('（　　　）が昇る。');
+  });
 });
