@@ -7,8 +7,6 @@ import { fileURLToPath } from 'node:url';
 
 const DEFAULT_HOST = '127.0.0.1';
 const DEFAULT_PORT = 4174;
-const MAX_PORT = 4199;
-const RESERVED_PORTS = new Set([4173]);
 const DIST_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../dist');
 
 const mimeTypes = new Map([
@@ -28,24 +26,22 @@ const mimeTypes = new Map([
   ['.woff2', 'font/woff2'],
 ]);
 
-const requestedPort = Number(process.env.STUDY_QUIZ_MANAGER_PORT ?? process.argv[2] ?? DEFAULT_PORT);
-const host = process.env.STUDY_QUIZ_MANAGER_HOST ?? DEFAULT_HOST;
-
 if (!existsSync(DIST_DIR)) {
   console.error('dist directory does not exist. Run `npm run build` first.');
   process.exit(1);
 }
 
-startServer(findCandidatePort(requestedPort));
+startServer();
 
-function startServer(port) {
+function startServer() {
   const server = createServer(handleRequest);
 
   server.on('error', (error) => {
-    if (error.code === 'EADDRINUSE' && port < MAX_PORT) {
-      const nextPort = findCandidatePort(port + 1);
-      console.warn(`Port ${port} is already in use. Trying ${nextPort}.`);
-      startServer(nextPort);
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${DEFAULT_PORT} is already in use.`);
+      console.error(`Study Quiz Manager data is stored for http://${DEFAULT_HOST}:${DEFAULT_PORT} only.`);
+      console.error('Use the already running app or stop that process before starting this server.');
+      process.exit(1);
       return;
     }
 
@@ -53,8 +49,8 @@ function startServer(port) {
     process.exit(1);
   });
 
-  server.listen(port, host, () => {
-    console.log(`Study Quiz Manager is running at http://${host}:${port}`);
+  server.listen(DEFAULT_PORT, DEFAULT_HOST, () => {
+    console.log(`Study Quiz Manager is running at http://${DEFAULT_HOST}:${DEFAULT_PORT}`);
     console.log(`Serving files from ${DIST_DIR}`);
   });
 
@@ -111,14 +107,6 @@ function resolveRequestedPath(url) {
   }
 
   return resolvedPath;
-}
-
-function findCandidatePort(port) {
-  let candidate = Number.isInteger(port) && port > 0 ? port : DEFAULT_PORT;
-  while (RESERVED_PORTS.has(candidate)) {
-    candidate += 1;
-  }
-  return candidate;
 }
 
 function shutdown(server) {
