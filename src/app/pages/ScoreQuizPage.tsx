@@ -73,7 +73,7 @@ export function ScoreQuizPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Scoring</p>
           <h2 className="text-3xl font-semibold tracking-tight">採点入力</h2>
-          <p className="mt-1 text-sm text-slate-500">{quiz.title}</p>
+          <p className="mt-1 text-sm text-slate-500">{quiz.title} の紙答案を、ブラウザ上の模範解答と照らし合わせて採点します。</p>
         </div>
         <div className="flex gap-2">
           <Link to={`/quizzes/${quiz.id}/print`}>
@@ -93,7 +93,8 @@ export function ScoreQuizPage() {
               <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
               <div>
                 <p className="font-medium">{item.title}</p>
-                <p className="text-sm text-slate-500">正解: {item.answer}</p>
+                <p className="text-sm font-medium text-slate-700">模範解答: {item.answer}</p>
+                {item.note ? <p className="text-sm text-slate-500">メモ: {item.note}</p> : null}
               </div>
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(RESULT_LABELS) as Result[]).map((result) => (

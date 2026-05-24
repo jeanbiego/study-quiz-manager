@@ -101,9 +101,9 @@ export function ItemFormPage() {
     <form className="grid gap-5" onSubmit={submit}>
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Item Editor</p>
-          <h2 className="text-3xl font-semibold tracking-tight">{existingItem ? '知識項目を編集' : '知識項目を登録'}</h2>
-          <p className="mt-1 text-sm text-slate-500">復習したい知識と代表問題を登録します。</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Quiz Editor</p>
+          <h2 className="text-3xl font-semibold tracking-tight">{existingItem ? 'クイズを編集' : 'クイズを登録'}</h2>
+          <p className="mt-1 text-sm text-slate-500">復習したい内容と問題を登録します。</p>
         </div>
         <div className="flex gap-2">
           <Link to="/">

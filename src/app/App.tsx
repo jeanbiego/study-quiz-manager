@@ -11,10 +11,10 @@ import { QuizzesPage } from './pages/QuizzesPage';
 import { ScoreQuizPage } from './pages/ScoreQuizPage';
 
 const navItems = [
-  { to: '/', label: '知識項目', icon: ListChecks },
   { to: '/items/new', label: '新規登録', icon: BookOpen },
   { to: '/quiz/new', label: '小テスト作成', icon: Printer },
   { to: '/quizzes', label: '小テスト履歴', icon: ClipboardList },
+  { to: '/', label: 'クイズ', icon: ListChecks },
   { to: '/backup', label: 'バックアップ', icon: Database },
 ];
 
