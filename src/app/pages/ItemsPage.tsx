@@ -1,37 +1,39 @@
-import { AlertTriangle, CalendarClock, CheckCircle2, Edit3, Layers3, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, CalendarClock, Edit3, Layers3, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toDateOnly } from '../../domain/date';
+import { getStudyItemSummary, getStudyItemUnit } from '../../domain/studyItemDisplay';
 import { SUBJECT_LABELS, QUESTION_TYPE_LABELS } from '../../domain/types';
-import type { Result, StudyItem, Subject } from '../../domain/types';
+import type { Result, Subject } from '../../domain/types';
 import { Badge } from '../../ui/Badge';
 import { Button } from '../../ui/Button';
 import { SelectInput, TextInput } from '../../ui/FormField';
+import { getSubjectBadgeClass } from '../../ui/subjectColors';
 import { useAppDataContext } from '../AppDataContext';
 
 export function ItemsPage() {
   const { data, setData } = useAppDataContext();
   const [query, setQuery] = useState('');
   const [subject, setSubject] = useState<Subject | ''>('');
-  const [category, setCategory] = useState('');
+  const [unit, setUnit] = useState('');
 
   const stateByItemId = useMemo(() => new Map(data.reviewStates.map((state) => [state.studyItemId, state])), [data.reviewStates]);
-  const categories = useMemo(() => [...new Set(data.studyItems.map((item) => item.category).filter(Boolean))].sort(), [data.studyItems]);
+  const units = useMemo(() => [...new Set(data.studyItems.map((item) => getStudyItemUnit(item)).filter(Boolean))].sort(), [data.studyItems]);
   const today = toDateOnly(new Date());
-  const activeCount = data.studyItems.filter((item) => item.status === 'active').length;
+  const registeredCount = data.studyItems.length;
   const dueCount = data.studyItems.filter((item) => {
     const reviewState = stateByItemId.get(item.id);
     return item.status === 'active' && (!reviewState?.nextReviewDate || reviewState.nextReviewDate <= today);
   }).length;
   const mistakeCount = data.reviewStates.filter((state) => state.mistakeCount > 0 || state.lastResult === 'partial' || state.lastResult === 'incorrect').length;
-  const masteredCount = data.studyItems.filter((item) => item.status === 'mastered').length;
 
   const filteredItems = data.studyItems.filter((item) => {
-    const queryTarget = `${item.title} ${item.questionText} ${item.answer} ${item.category} ${item.unit ?? ''}`.toLowerCase();
+    const itemUnit = getStudyItemUnit(item);
+    const queryTarget = `${item.questionText} ${item.answer} ${item.title} ${itemUnit}`.toLowerCase();
     return (
       (!query || queryTarget.includes(query.toLowerCase())) &&
       (!subject || item.subject === subject) &&
-      (!category || item.category === category)
+      (!unit || itemUnit === unit)
     );
   });
 
@@ -68,15 +70,14 @@ export function ItemsPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard icon={Layers3} label="有効項目" value={activeCount} tone="emerald" />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <StatCard icon={Layers3} label="登録済み" value={registeredCount} tone="emerald" />
         <StatCard icon={CalendarClock} label="出題対象" value={dueCount} tone="amber" />
         <StatCard icon={AlertTriangle} label="ミス履歴あり" value={mistakeCount} tone="rose" />
-        <StatCard icon={CheckCircle2} label="定着" value={masteredCount} tone="sky" />
       </div>
 
       <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_160px_180px]">
-        <TextInput placeholder="タイトル、問題文、正解で検索" value={query} onChange={(event) => setQuery(event.target.value)} />
+        <TextInput placeholder="問題文、正解、単元で検索" value={query} onChange={(event) => setQuery(event.target.value)} />
         <SelectInput value={subject} onChange={(event) => setSubject(event.target.value as Subject | '')}>
           <option value="">全科目</option>
           {Object.entries(SUBJECT_LABELS).map(([value, label]) => (
@@ -85,9 +86,9 @@ export function ItemsPage() {
             </option>
           ))}
         </SelectInput>
-        <SelectInput value={category} onChange={(event) => setCategory(event.target.value)}>
-          <option value="">全カテゴリ</option>
-          {categories.map((value) => (
+        <SelectInput value={unit} onChange={(event) => setUnit(event.target.value)}>
+          <option value="">全単元</option>
+          {units.map((value) => (
             <option key={value} value={value}>
               {value}
             </option>
@@ -96,16 +97,15 @@ export function ItemsPage() {
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-        <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+        <table className="w-full min-w-[860px] border-collapse text-left text-sm">
           <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
             <tr>
               <th className="px-4 py-3">科目</th>
-              <th className="px-4 py-3">カテゴリ</th>
-              <th className="px-4 py-3">タイトル</th>
+              <th className="px-4 py-3">単元</th>
+              <th className="px-4 py-3">問題</th>
               <th className="px-4 py-3">正解</th>
               <th className="px-4 py-3">形式</th>
               <th className="px-4 py-3">次回</th>
-              <th className="px-4 py-3">状態</th>
               <th className="px-4 py-3">最終結果</th>
               <th className="px-4 py-3">操作</th>
             </tr>
@@ -116,16 +116,13 @@ export function ItemsPage() {
               return (
                 <tr key={item.id} className="border-t border-slate-100 hover:bg-slate-50/70">
                   <td className="px-4 py-3">
-                    <Badge tone={getSubjectTone(item.subject)}>{SUBJECT_LABELS[item.subject]}</Badge>
+                    <Badge className={getSubjectBadgeClass(item.subject)}>{SUBJECT_LABELS[item.subject]}</Badge>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{item.category}</td>
-                  <td className="px-4 py-3 font-medium">{item.title}</td>
+                  <td className="px-4 py-3 text-slate-600">{getStudyItemUnit(item)}</td>
+                  <td className="max-w-[360px] px-4 py-3 font-medium">{getStudyItemSummary(item)}</td>
                   <td className="px-4 py-3">{item.answer}</td>
                   <td className="px-4 py-3 text-slate-600">{QUESTION_TYPE_LABELS[item.defaultQuestionType]}</td>
                   <td className="px-4 py-3">{reviewState?.nextReviewDate ?? '未復習'}</td>
-                  <td className="px-4 py-3">
-                    <Badge tone={item.status === 'active' ? 'emerald' : item.status === 'mastered' ? 'sky' : 'slate'}>{item.status}</Badge>
-                  </td>
                   <td className="px-4 py-3">{reviewState?.lastResult ? <ResultBadge result={reviewState.lastResult} /> : '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
@@ -188,14 +185,3 @@ function ResultBadge({ result }: { result: Result }) {
   return <Badge tone="rose">違う言葉</Badge>;
 }
 
-function getSubjectTone(subject: StudyItem['subject']) {
-  if (subject === 'japanese') {
-    return 'rose';
-  }
-
-  if (subject === 'science') {
-    return 'emerald';
-  }
-
-  return 'sky';
-}

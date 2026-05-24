@@ -3,8 +3,9 @@ import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { renderQuestionText } from '../../domain/question';
 import { createInitialReviewState } from '../../domain/review';
+import { createStudyItemTitle } from '../../domain/studyItemDisplay';
 import { QUESTION_TYPE_LABELS, SUBJECT_LABELS } from '../../domain/types';
-import type { QuestionType, StudyItem, StudyItemStatus, Subject } from '../../domain/types';
+import type { QuestionType, StudyItem, Subject } from '../../domain/types';
 import { createId } from '../../infra/id';
 import { Button } from '../../ui/Button';
 import { Field, SelectInput, TextArea, TextInput } from '../../ui/FormField';
@@ -12,30 +13,22 @@ import { useAppDataContext } from '../AppDataContext';
 
 type FormState = {
   subject: Subject;
-  category: string;
   unit: string;
-  title: string;
   questionText: string;
   answer: string;
   reading: string;
   note: string;
   defaultQuestionType: QuestionType;
-  importance: 1 | 2 | 3;
-  status: StudyItemStatus;
 };
 
 const emptyForm: FormState = {
   subject: 'social',
-  category: '',
   unit: '',
-  title: '',
   questionText: '',
   answer: '',
   reading: '',
   note: '',
   defaultQuestionType: 'short_answer',
-  importance: 2,
-  status: 'active',
 };
 
 export function ItemFormPage() {
@@ -51,18 +44,18 @@ export function ItemFormPage() {
       createdAt: existingItem?.createdAt ?? new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       subject: form.subject,
-      category: form.category,
+      category: form.unit,
       unit: form.unit || undefined,
-      title: form.title || 'プレビュー',
+      title: createStudyItemTitle(form.answer, form.questionText) || 'プレビュー',
       questionText: form.questionText,
       answer: form.answer,
       reading: form.reading || undefined,
       note: form.note || undefined,
       defaultQuestionType: form.defaultQuestionType,
-      importance: form.importance,
-      status: form.status,
+      importance: existingItem?.importance ?? 2,
+      status: existingItem?.status ?? 'active',
     }),
-    [existingItem?.createdAt, existingItem?.id, form],
+    [existingItem?.createdAt, existingItem?.id, existingItem?.importance, existingItem?.status, form],
   );
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -72,21 +65,24 @@ export function ItemFormPage() {
   function submit(event: FormEvent) {
     event.preventDefault();
     const now = new Date().toISOString();
+    const unit = form.unit.trim();
+    const questionText = form.questionText.trim();
+    const answer = form.answer.trim();
     const item: StudyItem = {
       id: existingItem?.id ?? createId('item'),
       createdAt: existingItem?.createdAt ?? now,
       updatedAt: now,
       subject: form.subject,
-      category: form.category.trim(),
-      unit: form.unit.trim() || undefined,
-      title: form.title.trim(),
-      questionText: form.questionText.trim(),
-      answer: form.answer.trim(),
-      reading: form.reading.trim() || undefined,
+      category: unit,
+      unit,
+      title: createStudyItemTitle(answer, questionText),
+      questionText,
+      answer,
+      reading: form.defaultQuestionType === 'contextual_writing' ? form.reading.trim() || undefined : undefined,
       note: form.note.trim() || undefined,
       defaultQuestionType: form.defaultQuestionType,
-      importance: form.importance,
-      status: form.status,
+      importance: existingItem?.importance ?? 2,
+      status: existingItem?.status ?? 'active',
     };
 
     setData((current) => ({
@@ -111,7 +107,7 @@ export function ItemFormPage() {
               戻る
             </Button>
           </Link>
-          <Button type="submit" disabled={!form.title || !form.questionText || !form.answer || !form.category}>
+          <Button type="submit" disabled={!form.unit || !form.questionText || !form.answer}>
             <Save size={16} />
             保存
           </Button>
@@ -128,24 +124,6 @@ export function ItemFormPage() {
             ))}
           </SelectInput>
         </Field>
-        <Field label="カテゴリ">
-          <TextInput value={form.category} onChange={(event) => update('category', event.target.value)} placeholder="地理、歴史、語彙など" required />
-        </Field>
-        <Field label="単元">
-          <TextInput value={form.unit} onChange={(event) => update('unit', event.target.value)} placeholder="日本のすがた、平安時代など" />
-        </Field>
-        <Field label="タイトル">
-          <TextInput value={form.title} onChange={(event) => update('title', event.target.value)} required />
-        </Field>
-        <Field label="問題文">
-          <TextArea value={form.questionText} onChange={(event) => update('questionText', event.target.value)} required />
-        </Field>
-        <Field label="正解">
-          <TextInput value={form.answer} onChange={(event) => update('answer', event.target.value)} required />
-        </Field>
-        <Field label="読み">
-          <TextInput value={form.reading} onChange={(event) => update('reading', event.target.value)} placeholder="文中書き取りで使う読み" />
-        </Field>
         <Field label="デフォルト出題形式">
           <SelectInput value={form.defaultQuestionType} onChange={(event) => update('defaultQuestionType', event.target.value as QuestionType)}>
             {Object.entries(QUESTION_TYPE_LABELS).map(([value, label]) => (
@@ -155,20 +133,20 @@ export function ItemFormPage() {
             ))}
           </SelectInput>
         </Field>
-        <Field label="重要度">
-          <SelectInput value={form.importance} onChange={(event) => update('importance', Number(event.target.value) as 1 | 2 | 3)}>
-            <option value={1}>1 低</option>
-            <option value={2}>2 標準</option>
-            <option value={3}>3 高</option>
-          </SelectInput>
+        <Field label="単元">
+          <TextInput value={form.unit} onChange={(event) => update('unit', event.target.value)} placeholder="地理、平安時代、漢字など" required />
         </Field>
-        <Field label="状態">
-          <SelectInput value={form.status} onChange={(event) => update('status', event.target.value as StudyItemStatus)}>
-            <option value="active">active</option>
-            <option value="mastered">mastered</option>
-            <option value="paused">paused</option>
-          </SelectInput>
+        <Field label="問題文">
+          <TextArea value={form.questionText} onChange={(event) => update('questionText', event.target.value)} required />
         </Field>
+        <Field label="正解">
+          <TextInput value={form.answer} onChange={(event) => update('answer', event.target.value)} required />
+        </Field>
+        {form.defaultQuestionType === 'contextual_writing' ? (
+          <Field label="読み">
+            <TextInput value={form.reading} onChange={(event) => update('reading', event.target.value)} placeholder="文中書き取りで使う読み" />
+          </Field>
+        ) : null}
         <Field label="メモ">
           <TextArea value={form.note} onChange={(event) => update('note', event.target.value)} />
         </Field>
@@ -188,15 +166,11 @@ export function ItemFormPage() {
 function toFormState(item: StudyItem): FormState {
   return {
     subject: item.subject,
-    category: item.category,
-    unit: item.unit ?? '',
-    title: item.title,
+    unit: item.unit ?? item.category,
     questionText: item.questionText,
     answer: item.answer,
     reading: item.reading ?? '',
     note: item.note ?? '',
     defaultQuestionType: item.defaultQuestionType,
-    importance: item.importance,
-    status: item.status,
   };
 }

@@ -99,6 +99,19 @@ describe('selectQuizItems', () => {
     expect(selected.map(({ item }) => item.id)).toEqual(['item_2']);
   });
 
+  it('filters by unit when a unit is present', () => {
+    const selected = selectQuizItems(
+      [
+        { ...baseItem, id: 'item_1', category: 'legacy-category', unit: '平安時代' },
+        { ...baseItem, id: 'item_2', category: 'legacy-category', unit: '鎌倉時代' },
+      ],
+      [],
+      { count: 10, categories: ['平安時代'], today: new Date('2026-05-24T00:00:00') },
+    );
+
+    expect(selected.map(({ item }) => item.id)).toEqual(['item_1']);
+  });
+
   it('can target items with mistakes', () => {
     const selected = selectQuizItems(
       [baseItem, { ...baseItem, id: 'item_2', title: '桓武天皇' }],
