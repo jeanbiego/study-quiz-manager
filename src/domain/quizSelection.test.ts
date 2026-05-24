@@ -61,6 +61,25 @@ describe('selectQuizItems', () => {
     expect(selected[0].questionType).toBe('short_answer');
   });
 
+  it('uses fill-blank after a wrong-term mistake unless the default is short answer', () => {
+    const selected = selectQuizItems(
+      [{ ...baseItem, defaultQuestionType: 'contextual_writing' }],
+      [
+        {
+          studyItemId: 'item_1',
+          correctCount: 0,
+          mistakeCount: 1,
+          consecutiveCorrectCount: 0,
+          lastResult: 'incorrect',
+          lastMistakeType: 'wrong_term',
+        },
+      ],
+      { count: 1, today: new Date('2026-05-24T00:00:00') },
+    );
+
+    expect(selected[0].questionType).toBe('fill_blank');
+  });
+
   it('can target only unreviewed items', () => {
     const selected = selectQuizItems(
       [baseItem, { ...baseItem, id: 'item_2', title: '桓武天皇' }],
@@ -114,5 +133,28 @@ describe('selectQuizItems', () => {
     );
 
     expect(selected.map(({ item }) => item.id)).toEqual(['item_2', 'item_1']);
+  });
+
+  it('uses the local calendar date as the deterministic random seed', () => {
+    const items = [
+      { ...baseItem, id: 'seed_item_1' },
+      { ...baseItem, id: 'seed_item_2' },
+      { ...baseItem, id: 'seed_item_3' },
+      { ...baseItem, id: 'seed_item_4' },
+    ];
+
+    const selected = selectQuizItems(items, [], {
+      count: 4,
+      order: 'random',
+      today: new Date(2026, 4, 24, 23, 30),
+    });
+    const selectedWithExplicitLocalSeed = selectQuizItems(items, [], {
+      count: 4,
+      order: 'random',
+      randomSeed: '2026-05-24',
+      today: new Date(2026, 4, 24, 23, 30),
+    });
+
+    expect(selected.map(({ item }) => item.id)).toEqual(selectedWithExplicitLocalSeed.map(({ item }) => item.id));
   });
 });

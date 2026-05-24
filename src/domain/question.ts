@@ -6,7 +6,7 @@ export function resolveQuestionType(item: StudyItem, lastMistakeType?: string): 
   }
 
   if (lastMistakeType === 'wrong_term') {
-    return item.defaultQuestionType === 'contextual_writing' ? 'short_answer' : item.defaultQuestionType;
+    return item.defaultQuestionType === 'short_answer' ? 'short_answer' : 'fill_blank';
   }
 
   return item.defaultQuestionType;

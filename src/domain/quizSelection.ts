@@ -1,5 +1,6 @@
 import { calculatePriorityScore, isDueForReview } from './priority';
 import { resolveQuestionType } from './question';
+import { toDateOnly } from './date';
 import type { QuestionType, ReviewState, StudyItem, Subject } from './types';
 
 export type QuizTarget = 'all_active' | 'due' | 'unreviewed' | 'mistakes';
@@ -77,7 +78,7 @@ function compareSelectedItems(left: SelectedQuizItem, right: SelectedQuizItem, o
 }
 
 function toSeed(today: Date): string {
-  return today.toISOString().slice(0, 10);
+  return toDateOnly(today);
 }
 
 function seededRank(value: string): number {

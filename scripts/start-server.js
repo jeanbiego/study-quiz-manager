@@ -2,7 +2,7 @@
 
 import { createServer } from 'node:http';
 import { createReadStream, existsSync, statSync } from 'node:fs';
-import { dirname, extname, join, normalize, resolve } from 'node:path';
+import { dirname, extname, isAbsolute, join, normalize, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DEFAULT_HOST = '127.0.0.1';
@@ -70,6 +70,12 @@ function handleRequest(request, response) {
   }
 
   const filePath = resolveRequestedPath(request.url ?? '/');
+  if (!filePath) {
+    response.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+    response.end('Bad request');
+    return;
+  }
+
   const targetPath = existsSync(filePath) && statSync(filePath).isFile() ? filePath : join(DIST_DIR, 'index.html');
   const contentType = mimeTypes.get(extname(targetPath).toLowerCase()) ?? 'application/octet-stream';
 
@@ -87,12 +93,20 @@ function handleRequest(request, response) {
 }
 
 function resolveRequestedPath(url) {
-  const pathname = new URL(url, 'http://localhost').pathname;
-  const decodedPath = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
+  let pathname;
+  let decodedPath;
+  try {
+    pathname = new URL(url, 'http://localhost').pathname;
+    decodedPath = decodeURIComponent(pathname === '/' ? '/index.html' : pathname);
+  } catch {
+    return undefined;
+  }
+
   const normalizedPath = normalize(decodedPath).replace(/^([/\\])+/, '');
   const resolvedPath = resolve(DIST_DIR, normalizedPath);
+  const relativePath = relative(DIST_DIR, resolvedPath);
 
-  if (!resolvedPath.startsWith(DIST_DIR)) {
+  if (relativePath.startsWith('..') || isAbsolute(relativePath)) {
     return join(DIST_DIR, 'index.html');
   }
 
