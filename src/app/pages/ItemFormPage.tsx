@@ -1,4 +1,4 @@
-import { Eye, Save } from 'lucide-react';
+import { Eye, RotateCcw, Save } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { renderQuestionText } from '../../domain/question';
@@ -74,6 +74,10 @@ export function ItemFormPage() {
     }));
   }
 
+  function resetNewItemForm() {
+    setForm(emptyForm);
+  }
+
   function submit(event: FormEvent) {
     event.preventDefault();
     const now = new Date().toISOString();
@@ -114,11 +118,18 @@ export function ItemFormPage() {
           <p className="mt-1 text-sm text-slate-500">復習したい内容と問題を登録します。</p>
         </div>
         <div className="flex gap-2">
-          <Link to="/">
-            <Button type="button" variant="secondary">
-              戻る
+          {existingItem ? (
+            <Link to="/">
+              <Button type="button" variant="secondary">
+                戻る
+              </Button>
+            </Link>
+          ) : (
+            <Button type="button" variant="secondary" onClick={resetNewItemForm}>
+              <RotateCcw size={16} />
+              リセット
             </Button>
-          </Link>
+          )}
           <Button type="submit" disabled={!form.unit || !form.questionText || !form.answer}>
             <Save size={16} />
             保存
