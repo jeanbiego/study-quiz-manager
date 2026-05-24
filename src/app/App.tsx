@@ -1,4 +1,4 @@
-import { BookOpen, Database, FileCheck2, ListChecks, Printer } from 'lucide-react';
+import { BookOpen, ClipboardList, Database, FileCheck2, ListChecks, Printer } from 'lucide-react';
 import { NavLink, Route, Routes } from 'react-router-dom';
 import { useAppData } from '../infra/useAppData';
 import { AppDataContext } from './AppDataContext';
@@ -7,12 +7,14 @@ import { ItemFormPage } from './pages/ItemFormPage';
 import { ItemsPage } from './pages/ItemsPage';
 import { PrintQuizPage } from './pages/PrintQuizPage';
 import { QuizBuilderPage } from './pages/QuizBuilderPage';
+import { QuizzesPage } from './pages/QuizzesPage';
 import { ScoreQuizPage } from './pages/ScoreQuizPage';
 
 const navItems = [
   { to: '/', label: '知識項目', icon: ListChecks },
   { to: '/items/new', label: '新規登録', icon: BookOpen },
   { to: '/quiz/new', label: '小テスト作成', icon: Printer },
+  { to: '/quizzes', label: '小テスト履歴', icon: ClipboardList },
   { to: '/backup', label: 'バックアップ', icon: Database },
 ];
 
@@ -52,6 +54,7 @@ export function App() {
             <Route path="/items/new" element={<ItemFormPage />} />
             <Route path="/items/:itemId/edit" element={<ItemFormPage />} />
             <Route path="/quiz/new" element={<QuizBuilderPage />} />
+            <Route path="/quizzes" element={<QuizzesPage />} />
             <Route path="/quizzes/:quizId/print" element={<PrintQuizPage />} />
             <Route path="/quizzes/:quizId/score" element={<ScoreQuizPage />} />
             <Route path="/backup" element={<BackupPage />} />

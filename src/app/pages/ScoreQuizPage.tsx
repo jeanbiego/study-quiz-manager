@@ -57,7 +57,7 @@ export function ScoreQuizPage() {
       };
     });
 
-    navigate('/');
+    navigate('/quizzes');
   }
 
   if (!quiz) {
