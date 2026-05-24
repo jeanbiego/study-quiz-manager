@@ -150,7 +150,7 @@ export function QuizBuilderPage() {
             </li>
           ))}
         </ol>
-        {!selectedItems.length ? <p className="p-6 text-sm text-slate-500">出題できる知識項目がありません。</p> : null}
+        {!selectedItems.length ? <p className="p-6 text-sm text-slate-500">出題できるクイズがありません。</p> : null}
       </section>
     </form>
   );

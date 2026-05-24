@@ -32,7 +32,7 @@ export function PrintQuizPage() {
       <div className="print:hidden flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 className="text-2xl font-semibold">{quiz.title}</h2>
-          <p className="text-sm text-slate-500">問題用紙と解答用紙を別ページとして印刷します。</p>
+          <p className="text-sm text-slate-500">問題用紙のみ印刷します。模範解答は採点入力画面で確認します。</p>
         </div>
         <div className="flex gap-2">
           <Link to={`/quizzes/${quiz.id}/score`}>
@@ -48,8 +48,7 @@ export function PrintQuizPage() {
         </div>
       </div>
 
-      <PrintableSheet title={`${quiz.title} 問題用紙`} items={items} quiz={quiz} showAnswers={false} />
-      <PrintableSheet title={`${quiz.title} 解答用紙`} items={items} quiz={quiz} showAnswers />
+      <PrintableSheet title={`${quiz.title} 問題用紙`} items={items} quiz={quiz} />
     </section>
   );
 }
@@ -58,10 +57,9 @@ type PrintableSheetProps = {
   title: string;
   items: NonNullable<ReturnType<typeof useAppDataContext>['data']['studyItems'][number]>[];
   quiz: NonNullable<ReturnType<typeof useAppDataContext>['data']['quizzes'][number]>;
-  showAnswers: boolean;
 };
 
-function PrintableSheet({ title, items, quiz, showAnswers }: PrintableSheetProps) {
+function PrintableSheet({ title, items, quiz }: PrintableSheetProps) {
   return (
     <section className="print-page min-h-[280mm] rounded-lg bg-white p-8 shadow-sm print:min-h-0 print:rounded-none print:p-0 print:shadow-none">
       <h2 className="mb-1 text-center text-2xl font-semibold">{title}</h2>
@@ -79,14 +77,7 @@ function PrintableSheet({ title, items, quiz, showAnswers }: PrintableSheetProps
                 <div className="grid flex-1 gap-2">
                   <p className="text-base leading-7">{renderQuestionText(item, questionType)}</p>
                   <p className="text-xs text-slate-500">{QUESTION_TYPE_LABELS[questionType]}</p>
-                  {showAnswers ? (
-                    <div className="rounded-md border border-slate-300 bg-slate-50 p-3">
-                      <p className="font-semibold">答え: {item.answer}</p>
-                      {item.note ? <p className="mt-1 text-sm text-slate-600">メモ: {item.note}</p> : null}
-                    </div>
-                  ) : (
-                    <div className="h-12 border-b-2 border-slate-400" />
-                  )}
+                  <div className="h-12 border-b-2 border-slate-400" />
                 </div>
               </div>
             </li>

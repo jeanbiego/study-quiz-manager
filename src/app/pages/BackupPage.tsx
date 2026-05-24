@@ -1,10 +1,11 @@
 import { Download, Upload } from 'lucide-react';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { Button } from '../../ui/Button';
 import { useAppDataContext } from '../AppDataContext';
 
 export function BackupPage() {
   const { data, replaceData } = useAppDataContext();
+  const [importError, setImportError] = useState('');
 
   function exportJson() {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -22,8 +23,13 @@ export function BackupPage() {
       return;
     }
 
-    const text = await file.text();
-    replaceData(JSON.parse(text));
+    try {
+      const text = await file.text();
+      replaceData(JSON.parse(text));
+      setImportError('');
+    } catch {
+      setImportError('JSONファイルを読み込めませんでした。ファイル形式を確認してください。');
+    }
     event.target.value = '';
   }
 
@@ -57,6 +63,7 @@ export function BackupPage() {
             <Upload size={16} />
             JSONを読み込む
           </span>
+          {importError ? <p className="text-sm font-medium text-rose-700" role="alert">{importError}</p> : null}
           <input className="sr-only" type="file" accept="application/json" onChange={importJson} />
         </label>
       </div>

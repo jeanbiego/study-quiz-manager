@@ -36,7 +36,7 @@ export function ItemsPage() {
   });
 
   function deleteItem(itemId: string) {
-    if (!confirm('この知識項目を削除しますか。関連する復習状態と履歴も削除されます。')) {
+    if (!confirm('このクイズを削除しますか。関連する復習状態と履歴も削除されます。')) {
       return;
     }
 
@@ -56,9 +56,9 @@ export function ItemsPage() {
     <section className="grid gap-5">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Knowledge Items</p>
-          <h2 className="text-3xl font-semibold tracking-tight">知識項目</h2>
-          <p className="mt-1 text-sm text-slate-500">{data.studyItems.length}件登録済み。復習候補を検索・整理します。</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">Quizzes</p>
+          <h2 className="text-3xl font-semibold tracking-tight">クイズ</h2>
+          <p className="mt-1 text-sm text-slate-500">{data.studyItems.length}件登録済み。復習候補のクイズを検索・整理します。</p>
         </div>
         <Link to="/items/new">
           <Button>
@@ -144,7 +144,7 @@ export function ItemsPage() {
             })}
           </tbody>
         </table>
-        {!filteredItems.length ? <p className="p-6 text-sm text-slate-500">条件に一致する知識項目はありません。</p> : null}
+        {!filteredItems.length ? <p className="p-6 text-sm text-slate-500">条件に一致するクイズはありません。</p> : null}
       </div>
     </section>
   );
