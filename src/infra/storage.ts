@@ -48,6 +48,10 @@ export function normalizeAppData(value: unknown): AppData {
   };
 }
 
+export function normalizeImportedAppData(value: unknown): AppData {
+  return cleanupLegacyKanjiMetadata(normalizeAppData(value));
+}
+
 function runLegacyKanjiMigration(data: AppData): AppData {
   let nextData = data;
   if (!localStorage.getItem(LEGACY_KANJI_MIGRATION_KEY)) {

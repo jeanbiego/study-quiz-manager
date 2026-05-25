@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toDateOnly } from '../../domain/date';
 import { getStudyItemSummary, getStudyItemUnit } from '../../domain/studyItemDisplay';
+import { SUBJECT_UNITS } from '../../domain/subjectUnits';
 import { SUBJECT_LABELS, QUESTION_TYPE_LABELS } from '../../domain/types';
 import type { Result, Subject } from '../../domain/types';
 import { Badge } from '../../ui/Badge';
@@ -18,7 +19,24 @@ export function ItemsPage() {
   const [unit, setUnit] = useState('');
 
   const stateByItemId = useMemo(() => new Map(data.reviewStates.map((state) => [state.studyItemId, state])), [data.reviewStates]);
-  const units = useMemo(() => [...new Set(data.studyItems.map((item) => getStudyItemUnit(item)).filter(Boolean))].sort(), [data.studyItems]);
+  const units = useMemo(() => {
+    const registeredUnits = [
+      ...new Set(
+        data.studyItems
+          .filter((item) => !subject || item.subject === subject)
+          .map((item) => getStudyItemUnit(item))
+          .filter(Boolean),
+      ),
+    ];
+
+    if (!subject) {
+      return registeredUnits.sort();
+    }
+
+    const standardUnits = SUBJECT_UNITS[subject];
+    const additionalUnits = registeredUnits.filter((value) => !standardUnits.includes(value)).sort();
+    return [...standardUnits, ...additionalUnits];
+  }, [data.studyItems, subject]);
   const today = toDateOnly(new Date());
   const registeredCount = data.studyItems.length;
   const dueCount = data.studyItems.filter((item) => {
@@ -36,6 +54,11 @@ export function ItemsPage() {
       (!unit || itemUnit === unit)
     );
   });
+
+  function updateSubject(nextSubject: Subject | '') {
+    setSubject(nextSubject);
+    setUnit('');
+  }
 
   function deleteItem(itemId: string) {
     if (!confirm('このクイズを削除しますか。関連する復習状態と履歴も削除されます。')) {
@@ -78,7 +101,7 @@ export function ItemsPage() {
 
       <div className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_160px_180px]">
         <TextInput placeholder="問題文、正解、単元で検索" value={query} onChange={(event) => setQuery(event.target.value)} />
-        <SelectInput value={subject} onChange={(event) => setSubject(event.target.value as Subject | '')}>
+        <SelectInput value={subject} onChange={(event) => updateSubject(event.target.value as Subject | '')}>
           <option value="">全科目</option>
           {Object.entries(SUBJECT_LABELS).map(([value, label]) => (
             <option key={value} value={value}>
