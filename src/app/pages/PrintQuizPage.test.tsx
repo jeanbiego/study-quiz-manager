@@ -29,7 +29,7 @@ const data: AppData = {
   quizzes: [
     {
       id: 'quiz_1',
-      createdAt: '2026-05-25T12:00:00.000Z',
+      createdAt: '2026-05-24T00:00:00.000Z',
       title: '2026/5/25 小テスト',
       itemIds: ['social_item', 'japanese_item'],
     },
@@ -38,7 +38,7 @@ const data: AppData = {
 };
 
 describe('PrintQuizPage', () => {
-  it('shows a compact one-line printed heading without the subject summary', () => {
+  it('shows a compact one-line printed heading using the persisted quiz date without the subject summary', () => {
     render(
       <MemoryRouter initialEntries={['/quizzes/quiz_1/print']}>
         <AppDataContext.Provider value={{ data, setData: vi.fn(), replaceData: vi.fn() }}>
