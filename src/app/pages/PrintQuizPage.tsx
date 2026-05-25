@@ -49,7 +49,7 @@ export function PrintQuizPage() {
         </div>
       </div>
 
-      <PrintableSheet title={`${quiz.title} 問題用紙`} items={items} quiz={quiz} />
+      <PrintableSheet title={`本日のクイズ ${new Date(quiz.createdAt).toLocaleDateString('ja-JP')}`} items={items} quiz={quiz} />
     </section>
   );
 }
@@ -63,8 +63,7 @@ type PrintableSheetProps = {
 function PrintableSheet({ title, items, quiz }: PrintableSheetProps) {
   return (
     <section className="print-page min-h-[280mm] rounded-lg bg-white p-8 shadow-sm print:min-h-0 print:rounded-none print:p-0 print:shadow-none">
-      <h2 className="mb-1 text-center text-2xl font-semibold">{title}</h2>
-      <p className="mb-8 text-center text-sm text-slate-500">{getSheetSummary(items)}</p>
+      <h2 className="mb-8 text-center text-xl font-semibold">{title}</h2>
       <ol className="grid gap-6">
         {items.map((item, index) => {
           const questionType = quiz.questionTypesByItemId?.[item.id] ?? item.defaultQuestionType;
@@ -86,10 +85,4 @@ function PrintableSheet({ title, items, quiz }: PrintableSheetProps) {
       </ol>
     </section>
   );
-}
-
-function getSheetSummary(items: PrintableSheetProps['items']): string {
-  const subjects = [...new Set(items.map((item) => SUBJECT_LABELS[item.subject]))];
-  const units = [...new Set(items.map((item) => getStudyItemUnit(item)).filter(Boolean))];
-  return [...subjects, ...units].join(' / ');
 }
