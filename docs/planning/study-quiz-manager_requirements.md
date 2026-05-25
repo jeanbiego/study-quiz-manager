@@ -321,7 +321,6 @@ type StudyItem = {
   questionText: string;
   answer: string;
   reading?: string;
-  note?: string;
 
   defaultQuestionType: QuestionType;
   importance: 1 | 2 | 3;
@@ -354,7 +353,6 @@ type AnswerRecord = {
   mistakeType?: MistakeType;
 
   questionTypeUsed: QuestionType;
-  memo?: string;
 };
 ```
 
@@ -436,7 +434,6 @@ type Quiz = {
 - 読み
 - デフォルト出題形式
 - 重要度
-- メモ
 
 文中書き取りの場合は、問題文プレビューを表示する。
 
@@ -468,7 +465,7 @@ type Quiz = {
 - 問題番号を表示する。
 - 手書き解答欄を十分に確保する。
 - 問題用紙には正解を表示しない。
-- 解答用紙には正解とメモを表示する。
+- 解答用紙には正解を表示する。
 - 印刷時には操作ボタンやナビゲーションを非表示にする。
 
 ### 9.5 採点入力画面

@@ -116,7 +116,6 @@ function toStudyItem(row: LegacyProblemRow): StudyItem {
     questionText: row.sentence,
     answer: row.answer_kanji,
     reading: katakanaToHiragana(row.reading),
-    note: 'kanji_test_generator から移行',
     defaultQuestionType: 'fill_blank',
     importance: incorrectCount >= 3 ? 3 : incorrectCount >= 1 ? 2 : 1,
     status: 'active',

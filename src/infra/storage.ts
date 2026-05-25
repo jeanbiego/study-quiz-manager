@@ -1,4 +1,4 @@
-import type { AppData } from '../domain/types';
+import type { AnswerRecord, AppData, StudyItem } from '../domain/types';
 import legacyAttemptsCsv from './legacy-data/attempts.csv?raw';
 import legacyProblemsCsv from './legacy-data/problems.csv?raw';
 import { importLegacyKanjiData } from './legacyKanjiImport';
@@ -39,17 +39,33 @@ export function normalizeAppData(value: unknown): AppData {
   }
 
   const candidate = value as Partial<AppData>;
-  return {
+  return removeObsoleteMemoFields({
     schemaVersion: 1,
     studyItems: Array.isArray(candidate.studyItems) ? candidate.studyItems : [],
     reviewStates: Array.isArray(candidate.reviewStates) ? candidate.reviewStates : [],
     quizzes: Array.isArray(candidate.quizzes) ? candidate.quizzes : [],
     answerRecords: Array.isArray(candidate.answerRecords) ? candidate.answerRecords : [],
-  };
+  });
 }
 
 export function normalizeImportedAppData(value: unknown): AppData {
   return cleanupLegacyKanjiMetadata(normalizeAppData(value));
+}
+
+function removeObsoleteMemoFields(data: AppData): AppData {
+  return {
+    ...data,
+    studyItems: data.studyItems.map((item) => {
+      const cleanedItem = { ...item } as StudyItem & { note?: unknown };
+      delete cleanedItem.note;
+      return cleanedItem;
+    }),
+    answerRecords: data.answerRecords.map((record) => {
+      const cleanedRecord = { ...record } as AnswerRecord & { memo?: unknown };
+      delete cleanedRecord.memo;
+      return cleanedRecord;
+    }),
+  };
 }
 
 function runLegacyKanjiMigration(data: AppData): AppData {
