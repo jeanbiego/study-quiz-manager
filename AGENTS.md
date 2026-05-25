@@ -91,7 +91,7 @@ npm run build
 - Branch prefix for Codex work: `codex/`
 - Default PR mode: draft PR
 - Default merge method: squash merge
-- Default expectation for implementation work: work on an appropriate branch, open a PR, wait for CI, check reviews, address actionable feedback, and merge when the stated merge conditions are satisfied.
+- Default expectation for implementation work: work on an appropriate branch, open a PR, wait for CI, check reviews, address actionable feedback, and autonomously merge when the stated merge conditions are satisfied unless the user explicitly asks to stop before merge.
 
 現在のリポジトリが空、または remote default branch が未設定の場合があります。その場合は初回コミットで `main` を作り、以後のPR baseとして `main` を使います。
 
@@ -113,7 +113,7 @@ git remote -v
 
 ## PR-To-Merge Workflow
 
-実装作業では、特に指定がない限り、この手順でPR、CI、レビュー確認、マージまで通すことを目標にします。ユーザーが「マージまで」「自走して」と依頼した場合は、マージ条件を満たした時点でマージまで進めます。
+実装作業では、特に指定がない限り、この手順でPR、CI、レビュー確認、マージまで自走します。ユーザーが draft の維持、レビュー待ち、マージ前の確認、または停止を明示した場合のみ、指定された地点で止めます。
 
 1. 作業範囲を確認する。
    - `git status -sb` と差分を確認する。
@@ -153,10 +153,11 @@ git remote -v
     - 必須CIが成功している。
     - blocking review、requested changes、未解決のactionable threadがない。
     - PRが最新のbaseに対してmergeableである。
-    - ユーザーの依頼がマージまで含んでいる、または明示的なマージ許可がある。
+    - ユーザーが draft 維持、レビュー待ち、マージ前の確認、またはマージ禁止を明示していない。
 11. マージする。
+    - マージ条件を満たしたら、明示的な追加許可を待たずに ready PR 化してマージまで進める。
     - 通常は `gh pr merge <pr> --squash --delete-branch` を使う。
-    - 必須チェック待ちでauto-mergeが適切な場合のみ、ユーザー許可の範囲で `--auto` を使う。
+    - 必須チェック待ちでauto-mergeが適切な場合は、ユーザーがマージ待機を指示していない限り `--auto` を使ってよい。
     - マージ後にローカル `main` を更新し、作業ブランチが不要なら削除する。
 12. マージ後レビューを確認する。
     - レビューやコメントはマージ後につくことがあるため、直近のmerged PRだけでなく、過去PRも適切にさかのぼって確認する。
@@ -186,9 +187,9 @@ git remote -v
 - required checks が失敗またはpendingのまま通常マージしない。
 - requested changes が残ったままマージしない。
 - merge conflict がある場合は、競合内容を確認して最小限に解消し、検証をやり直す。
-- ユーザーの明示許可がない場合、ready PR化、コメント返信、レビュー送信、マージは行わない。
-- ユーザーがレビュー対応の自走を依頼している場合、対応済みスレッドの解決済みマーキングは行ってよい。
-- ユーザーが「自走してマージまで」と明示した場合は、上記条件を満たした時点でマージまで進めてよい。
+- ユーザーが draft 維持、レビュー待ち、マージ前の確認、またはマージ禁止を明示した場合は、その指示を優先して ready PR化やマージを行わない。
+- 上記の停止指示がない実装作業では、対応済みスレッドの解決済みマーキング、ready PR化、マージをマージ条件の範囲内で自走してよい。
+- コメント返信やレビュー送信は、引き続きユーザーが明示的に許可した場合だけ行う。
 
 ## Final Report
 
