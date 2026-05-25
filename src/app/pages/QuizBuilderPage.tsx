@@ -121,19 +121,18 @@ export function QuizBuilderPage() {
             ))}
           </SelectInput>
         </Field>
-        <Field label="出題対象">
+        <Field label="問題の選び方">
           <SelectInput value={target} onChange={(event) => setTarget(event.target.value as QuizTarget)}>
-            <option value="all_active">有効な項目すべて</option>
-            <option value="due">期限到来のみ</option>
-            <option value="unreviewed">未復習のみ</option>
-            <option value="mistakes">ミスありのみ</option>
+            <option value="all_active">学習中の問題すべて</option>
+            <option value="unreviewed">まだ採点していない問題</option>
+            <option value="mistakes">一度でもまちがえた問題</option>
           </SelectInput>
         </Field>
-        <Field label="出題順">
+        <Field label="問題の並べ方">
           <SelectInput value={order} onChange={(event) => setOrder(event.target.value as QuizOrder)}>
-            <option value="priority">優先度順</option>
-            <option value="oldest_updated">古い更新順</option>
-            <option value="random">ランダム</option>
+            <option value="priority">復習のおすすめ順</option>
+            <option value="oldest_updated">登録・編集が古い順</option>
+            <option value="random">ランダムな順番</option>
           </SelectInput>
         </Field>
         </div>

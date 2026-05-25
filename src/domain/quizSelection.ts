@@ -1,10 +1,10 @@
-import { calculatePriorityScore, isDueForReview } from './priority';
+import { calculatePriorityScore } from './priority';
 import { resolveQuestionType } from './question';
 import { toDateOnly } from './date';
 import { getStudyItemUnit } from './studyItemDisplay';
 import type { QuestionType, ReviewState, StudyItem, Subject } from './types';
 
-export type QuizTarget = 'all_active' | 'due' | 'unreviewed' | 'mistakes';
+export type QuizTarget = 'all_active' | 'unreviewed' | 'mistakes';
 export type QuizOrder = 'priority' | 'oldest_updated' | 'random';
 
 export type QuizSelectionOptions = {
@@ -37,7 +37,7 @@ export function selectQuizItems(
     .filter((item) => item.status === 'active')
     .filter((item) => !options.subjects?.length || options.subjects.includes(item.subject))
     .filter((item) => !options.categories?.length || options.categories.includes(getStudyItemUnit(item)))
-    .filter((item) => matchesTarget(stateByItemId.get(item.id), target, today))
+    .filter((item) => matchesTarget(stateByItemId.get(item.id), target))
     .map((item) => {
       const reviewState = stateByItemId.get(item.id);
       return {
@@ -50,13 +50,9 @@ export function selectQuizItems(
     .slice(0, Math.max(0, options.count));
 }
 
-function matchesTarget(reviewState: ReviewState | undefined, target: QuizTarget, today: Date): boolean {
+function matchesTarget(reviewState: ReviewState | undefined, target: QuizTarget): boolean {
   if (target === 'all_active') {
     return true;
-  }
-
-  if (target === 'due') {
-    return isDueForReview(reviewState, today);
   }
 
   if (target === 'unreviewed') {

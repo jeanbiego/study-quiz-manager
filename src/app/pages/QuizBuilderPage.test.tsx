@@ -43,6 +43,20 @@ function renderPage() {
 }
 
 describe('QuizBuilderPage', () => {
+  it('uses learner-friendly quiz settings without a due-date-only option', () => {
+    renderPage();
+    const targetSelect = screen.getByRole('combobox', { name: '問題の選び方' });
+    const orderSelect = screen.getByRole('combobox', { name: '問題の並べ方' });
+
+    expect(within(targetSelect).getByRole('option', { name: '学習中の問題すべて' })).toBeInTheDocument();
+    expect(within(targetSelect).getByRole('option', { name: 'まだ採点していない問題' })).toBeInTheDocument();
+    expect(within(targetSelect).getByRole('option', { name: '一度でもまちがえた問題' })).toBeInTheDocument();
+    expect(within(targetSelect).queryByRole('option', { name: '期限到来のみ' })).not.toBeInTheDocument();
+    expect(within(orderSelect).getByRole('option', { name: '復習のおすすめ順' })).toBeInTheDocument();
+    expect(within(orderSelect).getByRole('option', { name: '登録・編集が古い順' })).toBeInTheDocument();
+    expect(within(orderSelect).getByRole('option', { name: 'ランダムな順番' })).toBeInTheDocument();
+  });
+
   it('shows only units for the selected subject and clears the selected unit when the subject changes', async () => {
     const user = userEvent.setup();
     renderPage();

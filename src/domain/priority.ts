@@ -13,11 +13,3 @@ export function calculatePriorityScore(item: StudyItem, reviewState: ReviewState
 
   return overdueDays + weakness + recentMistakeBonus + item.importance;
 }
-
-export function isDueForReview(reviewState: ReviewState | undefined, today: Date = new Date()): boolean {
-  if (!reviewState?.nextReviewDate) {
-    return true;
-  }
-
-  return differenceInCalendarDays(toDateOnly(today), reviewState.nextReviewDate) >= 0;
-}
