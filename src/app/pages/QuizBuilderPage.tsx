@@ -13,12 +13,14 @@ import { Field, SelectInput } from '../../ui/FormField';
 import { getSubjectBadgeClass } from '../../ui/subjectColors';
 import { useAppDataContext } from '../AppDataContext';
 
+const QUIZ_COUNT_OPTIONS = [7, 14, 21, 28, 35];
+
 export function QuizBuilderPage() {
   const navigate = useNavigate();
   const { data, setData } = useAppDataContext();
   const [subject, setSubject] = useState<Subject | ''>('');
   const [unit, setUnit] = useState('');
-  const [count, setCount] = useState(10);
+  const [count, setCount] = useState(QUIZ_COUNT_OPTIONS[0]);
   const [target, setTarget] = useState<QuizTarget>('all_active');
   const [order, setOrder] = useState<QuizOrder>('priority');
 
@@ -114,7 +116,7 @@ export function QuizBuilderPage() {
         </Field>
         <Field label="問題数">
           <SelectInput value={count} onChange={(event) => setCount(Number(event.target.value))}>
-            {[5, 10, 15, 20, 30].map((value) => (
+            {QUIZ_COUNT_OPTIONS.map((value) => (
               <option key={value} value={value}>
                 {value}問
               </option>

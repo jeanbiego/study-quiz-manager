@@ -49,7 +49,7 @@ export function PrintQuizPage() {
         </div>
       </div>
 
-      <PrintableSheet title={`本日のクイズ ${new Date(quiz.createdAt).toLocaleDateString('ja-JP')}`} items={items} quiz={quiz} />
+      <PrintableSheet title={getPrintedSheetTitle(quiz.title)} items={items} quiz={quiz} />
     </section>
   );
 }
@@ -85,4 +85,9 @@ function PrintableSheet({ title, items, quiz }: PrintableSheetProps) {
       </ol>
     </section>
   );
+}
+
+function getPrintedSheetTitle(quizTitle: string): string {
+  const dateLabel = quizTitle.match(/^(\d{4}\/\d{1,2}\/\d{1,2}) 小テスト$/)?.[1];
+  return dateLabel ? `本日のクイズ ${dateLabel}` : quizTitle;
 }

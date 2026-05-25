@@ -45,9 +45,12 @@ function renderPage() {
 describe('QuizBuilderPage', () => {
   it('uses learner-friendly quiz settings without a due-date-only option', () => {
     renderPage();
+    const countSelect = screen.getByRole('combobox', { name: '問題数' });
     const targetSelect = screen.getByRole('combobox', { name: '問題の選び方' });
     const orderSelect = screen.getByRole('combobox', { name: '問題の並べ方' });
 
+    expect(countSelect).toHaveValue('7');
+    expect(within(countSelect).getAllByRole('option').map((option) => option.textContent)).toEqual(['7問', '14問', '21問', '28問', '35問']);
     expect(within(targetSelect).getByRole('option', { name: '学習中の問題すべて' })).toBeInTheDocument();
     expect(within(targetSelect).getByRole('option', { name: 'まだ採点していない問題' })).toBeInTheDocument();
     expect(within(targetSelect).getByRole('option', { name: '一度でもまちがえた問題' })).toBeInTheDocument();
