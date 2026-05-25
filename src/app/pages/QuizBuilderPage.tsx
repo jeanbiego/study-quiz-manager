@@ -22,7 +22,18 @@ export function QuizBuilderPage() {
   const [target, setTarget] = useState<QuizTarget>('all_active');
   const [order, setOrder] = useState<QuizOrder>('priority');
 
-  const units = useMemo(() => [...new Set(data.studyItems.map((item) => getStudyItemUnit(item)).filter(Boolean))].sort(), [data.studyItems]);
+  const units = useMemo(
+    () =>
+      [
+        ...new Set(
+          data.studyItems
+            .filter((item) => !subject || item.subject === subject)
+            .map((item) => getStudyItemUnit(item))
+            .filter(Boolean),
+        ),
+      ].sort(),
+    [data.studyItems, subject],
+  );
   const subjects = subject ? [subject] : undefined;
   const unitsFilter = unit ? [unit] : undefined;
   const selectedItems = selectQuizItems(data.studyItems, data.reviewStates, {
@@ -32,6 +43,11 @@ export function QuizBuilderPage() {
     target,
     order,
   });
+
+  function updateSubject(nextSubject: Subject | '') {
+    setSubject(nextSubject);
+    setUnit('');
+  }
 
   function createQuiz(event: FormEvent) {
     event.preventDefault();
@@ -77,7 +93,7 @@ export function QuizBuilderPage() {
         </div>
         <div className="grid gap-4 md:grid-cols-5">
         <Field label="科目">
-          <SelectInput value={subject} onChange={(event) => setSubject(event.target.value as Subject | '')}>
+          <SelectInput value={subject} onChange={(event) => updateSubject(event.target.value as Subject | '')}>
             <option value="">全科目</option>
             {Object.entries(SUBJECT_LABELS).map(([value, label]) => (
               <option key={value} value={value}>
