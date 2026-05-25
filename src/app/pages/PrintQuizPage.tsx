@@ -77,7 +77,7 @@ function PrintableSheet({ title, items, quiz }: PrintableSheetProps) {
                     {SUBJECT_LABELS[item.subject]} / {getStudyItemUnit(item)}
                   </p>
                   <p className="text-base leading-7">{renderQuestionText(item, questionType)}</p>
-                  <div className="h-12 border-b-2 border-slate-400" />
+                  <div className="answer-writing-guide h-12" />
                 </div>
               </div>
             </li>
