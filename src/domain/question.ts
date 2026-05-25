@@ -20,7 +20,13 @@ export function renderQuestionText(item: StudyItem, questionType: QuestionType):
   if (questionType === 'fill_blank' || questionType === 'contextual_writing') {
     const reading = item.reading?.trim();
     const blankText = reading && reading !== item.answer ? `（${reading}）` : '（　　　）';
-    return item.questionText.includes(item.answer) ? item.questionText.replace(item.answer, blankText) : item.questionText;
+    if (!item.questionText) {
+      return item.questionText;
+    }
+
+    return item.answer && item.questionText.includes(item.answer)
+      ? item.questionText.replace(item.answer, blankText)
+      : `${item.questionText} ${blankText}`;
   }
 
   return item.questionText;

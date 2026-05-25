@@ -29,4 +29,10 @@ describe('renderQuestionText', () => {
   it('uses an empty blank when reading is the same as the answer', () => {
     expect(renderQuestionText({ ...baseItem, answer: '太陽', questionText: '太陽が昇る。', reading: '太陽' }, 'fill_blank')).toBe('（　　　）が昇る。');
   });
+
+  it('appends a blank when a fill-blank prompt does not contain its answer', () => {
+    expect(renderQuestionText({ ...baseItem, questionText: '次の読みを漢字で書きなさい。' }, 'fill_blank')).toBe(
+      '次の読みを漢字で書きなさい。 （　　　）',
+    );
+  });
 });

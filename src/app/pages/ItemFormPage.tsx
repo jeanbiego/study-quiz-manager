@@ -24,12 +24,12 @@ type FormState = {
 const availableQuestionTypes: QuestionType[] = ['short_answer', 'fill_blank'];
 
 const emptyForm: FormState = {
-  subject: 'social',
-  unit: getDefaultUnit('social'),
+  subject: 'japanese',
+  unit: getDefaultUnit('japanese'),
   questionText: '',
   answer: '',
   reading: '',
-  defaultQuestionType: 'short_answer',
+  defaultQuestionType: 'fill_blank',
 };
 
 export function ItemFormPage() {
