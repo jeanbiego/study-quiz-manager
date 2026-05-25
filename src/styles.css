@@ -25,6 +25,21 @@ textarea {
   color: #0f172a;
 }
 
+.answer-writing-guide {
+  position: relative;
+  border-top: 2px solid #94a3b8;
+  border-bottom: 2px solid #94a3b8;
+}
+
+.answer-writing-guide::after {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  border-top: 1px dotted #94a3b8;
+  content: "";
+}
+
 @media print {
   @page {
     size: A4 portrait;
