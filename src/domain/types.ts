@@ -13,7 +13,6 @@ export type StudyItem = {
   questionText: string;
   answer: string;
   reading?: string;
-  note?: string;
   defaultQuestionType: QuestionType;
   importance: 1 | 2 | 3;
   status: StudyItemStatus;
@@ -33,7 +32,6 @@ export type AnswerRecord = {
   result: Result;
   mistakeType?: MistakeType;
   questionTypeUsed: QuestionType;
-  memo?: string;
 };
 
 export type ReviewState = {

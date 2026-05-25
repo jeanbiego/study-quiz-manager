@@ -18,7 +18,6 @@ type FormState = {
   questionText: string;
   answer: string;
   reading: string;
-  note: string;
   defaultQuestionType: QuestionType;
 };
 
@@ -30,7 +29,6 @@ const emptyForm: FormState = {
   questionText: '',
   answer: '',
   reading: '',
-  note: '',
   defaultQuestionType: 'short_answer',
 };
 
@@ -54,7 +52,6 @@ export function ItemFormPage() {
       questionText: form.questionText,
       answer: form.answer,
       reading: form.reading || undefined,
-      note: form.note || undefined,
       defaultQuestionType: form.defaultQuestionType,
       importance: existingItem?.importance ?? 2,
       status: existingItem?.status ?? 'active',
@@ -95,7 +92,6 @@ export function ItemFormPage() {
       questionText,
       answer,
       reading: form.reading.trim() || undefined,
-      note: form.note.trim() || undefined,
       defaultQuestionType: form.defaultQuestionType,
       importance: existingItem?.importance ?? 2,
       status: existingItem?.status ?? 'active',
@@ -174,9 +170,6 @@ export function ItemFormPage() {
         <Field label="読み">
           <TextInput value={form.reading} onChange={(event) => update('reading', event.target.value)} placeholder="任意" />
         </Field>
-        <Field label="メモ">
-          <TextArea value={form.note} onChange={(event) => update('note', event.target.value)} />
-        </Field>
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
             <Eye size={16} />
@@ -197,7 +190,6 @@ function toFormState(item: StudyItem): FormState {
     questionText: item.questionText,
     answer: item.answer,
     reading: item.reading ?? '',
-    note: item.note ?? '',
     defaultQuestionType: item.defaultQuestionType === 'contextual_writing' ? 'fill_blank' : item.defaultQuestionType,
   };
 }

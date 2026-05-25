@@ -95,7 +95,6 @@ export function ScoreQuizPage() {
               <div>
                 <p className="font-medium">{getStudyItemSummary(item)}</p>
                 <p className="text-sm font-medium text-slate-700">模範解答: {item.answer}</p>
-                {item.note ? <p className="text-sm text-slate-500">メモ: {item.note}</p> : null}
               </div>
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(RESULT_LABELS) as Result[]).map((result) => (

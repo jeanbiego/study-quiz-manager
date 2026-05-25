@@ -82,4 +82,25 @@ describe('loadAppData legacy metadata cleanup', () => {
     expect(imported.studyItems[0]).toMatchObject({ subject: 'social', category: '歴史', unit: '歴史' });
     expect(imported.studyItems[1]).toMatchObject({ subject: 'social', category: '公民', unit: '公民' });
   });
+
+  it('removes obsolete memo fields from restored data', () => {
+    const imported = normalizeImportedAppData({
+      ...data([]),
+      studyItems: [{ ...item({ id: 'manual-item' }), note: '不要なメモ' }],
+      answerRecords: [
+        {
+          id: 'answer-1',
+          studyItemId: 'manual-item',
+          quizId: 'quiz-1',
+          answeredAt: '2026-01-01T00:00:00.000Z',
+          result: 'correct',
+          questionTypeUsed: 'short_answer',
+          memo: '不要な採点メモ',
+        },
+      ],
+    });
+
+    expect(imported.studyItems[0]).not.toHaveProperty('note');
+    expect(imported.answerRecords[0]).not.toHaveProperty('memo');
+  });
 });
