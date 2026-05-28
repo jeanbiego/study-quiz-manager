@@ -1,5 +1,7 @@
 import type { QuestionType, StudyItem } from './types';
 
+const blankPlaceholderPattern = /[（(][\s\u3000]*[）)]/;
+
 export function resolveQuestionType(item: StudyItem, lastMistakeType?: string): QuestionType {
   if (lastMistakeType === 'wrong_character') {
     return 'fill_blank';
@@ -24,6 +26,10 @@ export function renderQuestionText(item: StudyItem, questionType: QuestionType):
       return item.questionText;
     }
 
+    if (blankPlaceholderPattern.test(item.questionText)) {
+      return item.questionText;
+    }
+
     return item.answer && item.questionText.includes(item.answer)
       ? item.questionText.replace(item.answer, blankText)
       : `${item.questionText} ${blankText}`;
@@ -43,7 +49,13 @@ export function renderQuestionTextWithAnswer(item: StudyItem, questionType: Ques
     }
 
     const answerText = `（${item.answer}）`;
-    return item.questionText.includes(item.answer) ? item.questionText.replace(item.answer, answerText) : `${item.questionText} ${answerText}`;
+    if (item.questionText.includes(item.answer)) {
+      return item.questionText.replace(item.answer, answerText);
+    }
+
+    return blankPlaceholderPattern.test(item.questionText)
+      ? item.questionText.replace(blankPlaceholderPattern, answerText)
+      : `${item.questionText} ${answerText}`;
   }
 
   return item.questionText;
