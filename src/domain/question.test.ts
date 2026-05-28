@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderQuestionText } from './question';
+import { renderQuestionText, renderQuestionTextWithAnswer } from './question';
 import type { StudyItem } from './types';
 
 const baseItem: StudyItem = {
@@ -34,5 +34,39 @@ describe('renderQuestionText', () => {
     expect(renderQuestionText({ ...baseItem, questionText: '次の読みを漢字で書きなさい。' }, 'fill_blank')).toBe(
       '次の読みを漢字で書きなさい。 （　　　）',
     );
+  });
+
+  it('does not append a second blank when the prompt already has one', () => {
+    expect(renderQuestionText({ ...baseItem, questionText: '北条氏は（　　　）となって幕府の政治を動かしました。', answer: '執権' }, 'fill_blank')).toBe(
+      '北条氏は（　　　）となって幕府の政治を動かしました。',
+    );
+  });
+});
+
+describe('renderQuestionTextWithAnswer', () => {
+  it('wraps the answer in parentheses for fill-blank review displays', () => {
+    expect(
+      renderQuestionTextWithAnswer(
+        {
+          ...baseItem,
+          questionText: '北条氏は執権となって幕府の政治を動かしました。',
+          answer: '執権',
+        },
+        'fill_blank',
+      ),
+    ).toBe('北条氏は（執権）となって幕府の政治を動かしました。');
+  });
+
+  it('leaves short-answer prompts unchanged', () => {
+    expect(renderQuestionTextWithAnswer(baseItem, 'short_answer')).toBe(baseItem.questionText);
+  });
+
+  it('replaces an existing blank with the answer for fill-blank review displays', () => {
+    expect(
+      renderQuestionTextWithAnswer(
+        { ...baseItem, questionText: '北条氏は（　　　）となって幕府の政治を動かしました。', answer: '執権' },
+        'fill_blank',
+      ),
+    ).toBe('北条氏は（執権）となって幕府の政治を動かしました。');
   });
 });
