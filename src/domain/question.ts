@@ -31,3 +31,20 @@ export function renderQuestionText(item: StudyItem, questionType: QuestionType):
 
   return item.questionText;
 }
+
+export function renderQuestionTextWithAnswer(item: StudyItem, questionType: QuestionType): string {
+  if (questionType === 'short_answer') {
+    return item.questionText;
+  }
+
+  if (questionType === 'fill_blank' || questionType === 'contextual_writing') {
+    if (!item.questionText || !item.answer) {
+      return item.questionText;
+    }
+
+    const answerText = `（${item.answer}）`;
+    return item.questionText.includes(item.answer) ? item.questionText.replace(item.answer, answerText) : `${item.questionText} ${answerText}`;
+  }
+
+  return item.questionText;
+}

@@ -24,6 +24,15 @@ const data: AppData = {
   schemaVersion: 1,
   studyItems: [
     baseItem,
+    {
+      ...baseItem,
+      id: 'fill_blank_item',
+      category: '歴史',
+      title: '鎌倉幕府',
+      questionText: '北条氏は執権となって幕府の政治を動かしました。',
+      answer: '執権',
+      defaultQuestionType: 'fill_blank',
+    },
     { ...baseItem, id: 'japanese_item', subject: 'japanese', category: '漢字', title: '漢字' },
     { ...baseItem, id: 'science_item', subject: 'science', category: '生物', title: '植物' },
   ],
@@ -78,5 +87,11 @@ describe('QuizBuilderPage', () => {
     expect(unitSelect).toHaveValue('');
     expect(within(unitSelect).getByRole('option', { name: '生物' })).toBeInTheDocument();
     expect(within(unitSelect).queryByRole('option', { name: '地理' })).not.toBeInTheDocument();
+  });
+
+  it('shows the target answer in context for fill-blank quiz candidates', () => {
+    renderPage();
+
+    expect(screen.getByText('北条氏は（執権）となって幕府の政治を動かしました。')).toBeInTheDocument();
   });
 });

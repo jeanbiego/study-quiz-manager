@@ -1,9 +1,10 @@
 import { Filter, Printer, Shuffle } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { renderQuestionTextWithAnswer } from '../../domain/question';
 import { selectQuizItems } from '../../domain/quizSelection';
 import type { QuizOrder, QuizTarget } from '../../domain/quizSelection';
-import { getStudyItemSummary, getStudyItemUnit } from '../../domain/studyItemDisplay';
+import { getStudyItemUnit } from '../../domain/studyItemDisplay';
 import { QUESTION_TYPE_LABELS, SUBJECT_LABELS } from '../../domain/types';
 import type { Subject } from '../../domain/types';
 import { createId } from '../../infra/id';
@@ -159,7 +160,7 @@ export function QuizBuilderPage() {
             <li key={item.id} className="grid gap-2 p-4 hover:bg-slate-50/70 md:grid-cols-[40px_1fr_160px_110px] md:items-center">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
               <div>
-                <p className="font-medium">{getStudyItemSummary(item)}</p>
+                <p className="font-medium">{renderQuestionTextWithAnswer(item, questionType)}</p>
                 <div className="mt-1 flex flex-wrap gap-2">
                   <Badge className={getSubjectBadgeClass(item.subject)}>{SUBJECT_LABELS[item.subject]}</Badge>
                   <span className="text-sm text-slate-500">{getStudyItemUnit(item)}</span>

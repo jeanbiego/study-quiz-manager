@@ -1,9 +1,9 @@
 import { Save } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { renderQuestionTextWithAnswer } from '../../domain/question';
 import { updateReviewState } from '../../domain/review';
-import { getStudyItemSummary } from '../../domain/studyItemDisplay';
-import { RESULT_LABELS } from '../../domain/types';
+import { QUESTION_TYPE_LABELS, RESULT_LABELS } from '../../domain/types';
 import type { AnswerRecord, Result } from '../../domain/types';
 import { createId } from '../../infra/id';
 import { Badge } from '../../ui/Badge';
@@ -88,36 +88,42 @@ export function ScoreQuizPage() {
       </div>
 
       <ol className="grid gap-3">
-        {items.map((item, index) => (
-          <li key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="grid gap-3 md:grid-cols-[40px_1fr_auto] md:items-center">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
-              <div>
-                <p className="font-medium">{getStudyItemSummary(item)}</p>
-                <p className="text-sm font-medium text-slate-700">模範解答: {item.answer}</p>
+        {items.map((item, index) => {
+          const questionType = quiz.questionTypesByItemId?.[item.id] ?? item.defaultQuestionType;
+          return (
+            <li key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="grid gap-3 md:grid-cols-[40px_1fr_auto] md:items-center">
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{index + 1}</span>
+                <div>
+                  <div className="mb-1">
+                    <Badge tone={questionType === 'fill_blank' || questionType === 'contextual_writing' ? 'amber' : 'slate'}>{QUESTION_TYPE_LABELS[questionType]}</Badge>
+                  </div>
+                  <p className="font-medium">{renderQuestionTextWithAnswer(item, questionType)}</p>
+                  <p className="text-sm font-medium text-slate-700">模範解答: {item.answer}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(Object.keys(RESULT_LABELS) as Result[]).map((result) => (
+                    <Button
+                      key={result}
+                      type="button"
+                      variant={results[item.id] === result ? 'primary' : 'secondary'}
+                      onClick={() => setResults((current) => ({ ...current, [item.id]: result }))}
+                    >
+                      {RESULT_LABELS[result]}
+                    </Button>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {(Object.keys(RESULT_LABELS) as Result[]).map((result) => (
-                  <Button
-                    key={result}
-                    type="button"
-                    variant={results[item.id] === result ? 'primary' : 'secondary'}
-                    onClick={() => setResults((current) => ({ ...current, [item.id]: result }))}
-                  >
-                    {RESULT_LABELS[result]}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            {results[item.id] ? (
-              <div className="mt-3 md:ml-10">
-                <Badge tone={results[item.id] === 'correct' ? 'emerald' : results[item.id] === 'partial' ? 'amber' : 'rose'}>
-                  {RESULT_LABELS[results[item.id]]}
-                </Badge>
-              </div>
-            ) : null}
-          </li>
-        ))}
+              {results[item.id] ? (
+                <div className="mt-3 md:ml-10">
+                  <Badge tone={results[item.id] === 'correct' ? 'emerald' : results[item.id] === 'partial' ? 'amber' : 'rose'}>
+                    {RESULT_LABELS[results[item.id]]}
+                  </Badge>
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
