@@ -18,6 +18,7 @@ const mimeTypes = new Map([
   ['.jpg', 'image/jpeg'],
   ['.js', 'application/javascript; charset=utf-8'],
   ['.json', 'application/json; charset=utf-8'],
+  ['.webmanifest', 'application/manifest+json; charset=utf-8'],
   ['.png', 'image/png'],
   ['.svg', 'image/svg+xml; charset=utf-8'],
   ['.ttf', 'font/ttf'],
@@ -76,7 +77,7 @@ function handleRequest(request, response) {
   const contentType = mimeTypes.get(extname(targetPath).toLowerCase()) ?? 'application/octet-stream';
 
   response.writeHead(200, {
-    'Cache-Control': targetPath.endsWith('index.html') ? 'no-cache' : 'public, max-age=3600',
+    'Cache-Control': shouldRevalidate(targetPath) ? 'no-cache' : 'public, max-age=3600',
     'Content-Type': contentType,
   });
 
@@ -107,6 +108,15 @@ function resolveRequestedPath(url) {
   }
 
   return resolvedPath;
+}
+
+function shouldRevalidate(filePath) {
+  return (
+    filePath.endsWith('index.html') ||
+    filePath.endsWith('manifest.webmanifest') ||
+    filePath.endsWith('registerSW.js') ||
+    filePath.endsWith('sw.js')
+  );
 }
 
 function shutdown(server) {

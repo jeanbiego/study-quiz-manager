@@ -18,6 +18,15 @@ http://127.0.0.1:4174
 | 開発サーバー | 5174 | 実装確認専用。日常の学習データを入力しません。 |
 | study-task-manager | 4173 | 既存アプリ用として空けておきます。 |
 
+## PWA
+
+`study-quiz-manager` は PWA としてインストールできます。`npm.cmd run build` 後、`dist/` に
+`sw.js`、`registerSW.js`、`manifest.webmanifest` が生成され、初回表示後はブラウザの
+Service Worker キャッシュから再表示できます。
+
+ただし、サーバーなしで見えている画面はキャッシュ版です。アプリ更新後に最新ビルドを配信するには、
+再度 `npm.cmd run build` を実行し、`http://127.0.0.1:4174` の配布サーバーから一度読み込んでください。
+
 ## Commands
 
 ```powershell
@@ -68,3 +77,15 @@ npm.cmd run build
 ```
 
 アプリ更新後は再度 `npm.cmd run build` を実行します。
+
+## PWA Install
+
+1. `npm.cmd run build` を実行します。
+2. `npm.cmd run serve` を起動します。
+3. Chrome または Edge で `http://127.0.0.1:4174` を開きます。
+4. アドレスバーのインストールアイコンから `Study Quiz Manager` をインストールします。
+5. `chrome://apps` または `edge://apps` で、必要に応じて「サインイン時にアプリを開始」を有効にします。
+
+`http://localhost:4174` ではインストールしません。過去に別アプリの Service Worker や
+`localStorage` が残っている可能性があるため、通常利用とPWAインストールは必ず
+`http://127.0.0.1:4174` に統一してください。
