@@ -71,10 +71,33 @@ describe('findDuplicateStudyItemWarnings', () => {
 
     expect(warnings).toEqual([]);
   });
+
+  it('skips malformed imported items during scans', () => {
+    const warnings = findDuplicateStudyItemWarnings(
+      {
+        id: 'item_new',
+        answer: '表裏',
+        questionText: '新しい問題文',
+      },
+      [
+        null,
+        { ...baseItem, id: 'missing_answer', answer: undefined },
+        { ...baseItem, id: 'missing_question', questionText: undefined },
+        { ...baseItem, id: 'valid_item' },
+      ] as unknown as StudyItem[],
+    );
+
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].item.id).toBe('valid_item');
+  });
 });
 
 describe('normalizeStudyItemMatchText', () => {
   it('normalizes width, case, and whitespace', () => {
     expect(normalizeStudyItemMatchText(' ＡbＣ  １２ ')).toBe('abc12');
+  });
+
+  it('returns an empty string for non-string values', () => {
+    expect(normalizeStudyItemMatchText(undefined)).toBe('');
   });
 });
