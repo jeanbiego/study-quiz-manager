@@ -1,6 +1,7 @@
-import { Eye, RotateCcw, Save } from 'lucide-react';
+import { AlertTriangle, Eye, RotateCcw, Save } from 'lucide-react';
 import { FormEvent, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { findDuplicateStudyItemWarnings, type DuplicateStudyItemReason } from '../../domain/duplicateStudyItem';
 import { renderQuestionText } from '../../domain/question';
 import { createInitialReviewState } from '../../domain/review';
 import { createStudyItemTitle } from '../../domain/studyItemDisplay';
@@ -22,6 +23,14 @@ type FormState = {
 };
 
 const availableQuestionTypes: QuestionType[] = ['short_answer', 'fill_blank'];
+const maxDuplicateWarningsShown = 5;
+
+const duplicateReasonLabels: Record<DuplicateStudyItemReason, string> = {
+  same_answer: '答えが同一',
+  related_answer: '答えが包含関係',
+  answer_in_existing_question: '新しい答えが既存の問題文に含まれる',
+  existing_answer_in_question: '既存の答えが新しい問題文に含まれる',
+};
 
 const emptyForm: FormState = {
   subject: 'japanese',
@@ -38,6 +47,8 @@ export function ItemFormPage() {
   const { data, setData } = useAppDataContext();
   const existingItem = data.studyItems.find((item) => item.id === itemId);
   const [form, setForm] = useState<FormState>(() => (existingItem ? toFormState(existingItem) : emptyForm));
+  const [duplicateWarningAccepted, setDuplicateWarningAccepted] = useState(false);
+  const [duplicateWarningAttempted, setDuplicateWarningAttempted] = useState(false);
   const unitOptions = getUnitOptions(form.subject, form.unit);
 
   const previewItem = useMemo<StudyItem>(
@@ -58,12 +69,16 @@ export function ItemFormPage() {
     }),
     [existingItem?.createdAt, existingItem?.id, existingItem?.importance, existingItem?.status, form],
   );
+  const duplicateWarnings = useMemo(() => findDuplicateStudyItemWarnings(previewItem, data.studyItems), [data.studyItems, previewItem]);
+  const hasDuplicateWarnings = duplicateWarnings.length > 0;
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
+    resetDuplicateConfirmation();
     setForm((current) => ({ ...current, [key]: value }));
   }
 
   function updateSubject(subject: Subject) {
+    resetDuplicateConfirmation();
     setForm((current) => ({
       ...current,
       subject,
@@ -72,7 +87,13 @@ export function ItemFormPage() {
   }
 
   function resetNewItemForm() {
+    resetDuplicateConfirmation();
     setForm(emptyForm);
+  }
+
+  function resetDuplicateConfirmation() {
+    setDuplicateWarningAccepted(false);
+    setDuplicateWarningAttempted(false);
   }
 
   function submit(event: FormEvent) {
@@ -96,6 +117,11 @@ export function ItemFormPage() {
       importance: existingItem?.importance ?? 2,
       status: existingItem?.status ?? 'active',
     };
+
+    if (hasDuplicateWarnings && !duplicateWarningAccepted) {
+      setDuplicateWarningAttempted(true);
+      return;
+    }
 
     setData((current) => ({
       ...current,
@@ -170,6 +196,48 @@ export function ItemFormPage() {
         <Field label="読み">
           <TextInput value={form.reading} onChange={(event) => update('reading', event.target.value)} placeholder="任意" />
         </Field>
+        {hasDuplicateWarnings ? (
+          <div className="grid gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 md:col-span-2">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 shrink-0" size={18} />
+              <div>
+                <p className="font-semibold">重複の可能性があります</p>
+                <p className="mt-1 text-amber-900">科目や単元が違う項目も含めて確認しています。確認後もこのまま保存できます。</p>
+              </div>
+            </div>
+            <ul className="grid gap-2">
+              {duplicateWarnings.slice(0, maxDuplicateWarningsShown).map((warning) => (
+                <li key={warning.item.id} className="grid gap-1 border-t border-amber-200 pt-2">
+                  <p className="font-medium">
+                    {warning.item.answer} / {SUBJECT_LABELS[warning.item.subject]} / {warning.item.unit ?? warning.item.category}
+                  </p>
+                  <p className="line-clamp-2 text-amber-900">{warning.item.questionText}</p>
+                  <p className="text-xs text-amber-800">{warning.reasons.map((reason) => duplicateReasonLabels[reason]).join('・')}</p>
+                </li>
+              ))}
+            </ul>
+            {duplicateWarnings.length > maxDuplicateWarningsShown ? (
+              <p className="text-xs text-amber-800">ほか {duplicateWarnings.length - maxDuplicateWarningsShown} 件の候補があります。</p>
+            ) : null}
+            <label className="flex items-start gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                className="mt-0.5 size-4 rounded border-amber-300 text-amber-700 focus:ring-amber-500"
+                checked={duplicateWarningAccepted}
+                onChange={(event) => {
+                  setDuplicateWarningAccepted(event.target.checked);
+                  if (event.target.checked) {
+                    setDuplicateWarningAttempted(false);
+                  }
+                }}
+              />
+              <span>重複候補を確認したので、このまま保存する</span>
+            </label>
+            {duplicateWarningAttempted && !duplicateWarningAccepted ? (
+              <p className="text-xs font-semibold text-amber-900">保存するには、重複候補の確認チェックを入れてください。</p>
+            ) : null}
+          </div>
+        ) : null}
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
             <Eye size={16} />
