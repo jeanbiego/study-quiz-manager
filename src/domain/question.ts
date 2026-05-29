@@ -27,7 +27,7 @@ export function renderQuestionText(item: StudyItem, questionType: QuestionType):
     }
 
     if (blankPlaceholderPattern.test(item.questionText)) {
-      return item.questionText;
+      return item.questionText.replace(blankPlaceholderPattern, blankText);
     }
 
     return item.answer && item.questionText.includes(item.answer)

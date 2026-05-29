@@ -41,6 +41,12 @@ describe('renderQuestionText', () => {
       '北条氏は（　　　）となって幕府の政治を動かしました。',
     );
   });
+
+  it('replaces an existing blank with the reading hint when available', () => {
+    expect(
+      renderQuestionText({ ...baseItem, questionText: '朝日を（　　　）。', answer: '浴びる', reading: 'あびる' }, 'fill_blank'),
+    ).toBe('朝日を（あびる）。');
+  });
 });
 
 describe('renderQuestionTextWithAnswer', () => {
