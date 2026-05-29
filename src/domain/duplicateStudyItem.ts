@@ -17,13 +17,14 @@ const MIN_RELATED_TERM_LENGTH = 2;
 
 export function findDuplicateStudyItemWarnings(candidate: DuplicateCandidate, items: StudyItem[]): DuplicateStudyItemWarning[] {
   return items
+    .filter(isMatchableStudyItem)
     .filter((item) => item.id !== candidate.id)
     .map((item) => ({ item, reasons: getDuplicateReasons(candidate, item) }))
     .filter((warning) => warning.reasons.length > 0);
 }
 
-export function normalizeStudyItemMatchText(value: string): string {
-  return value.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, '');
+export function normalizeStudyItemMatchText(value: unknown): string {
+  return typeof value === 'string' ? value.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, '') : '';
 }
 
 function getDuplicateReasons(candidate: DuplicateCandidate, item: StudyItem): DuplicateStudyItemReason[] {
@@ -62,4 +63,15 @@ function hasAnswerContainment(left: string, right: string): boolean {
 
 function isSearchableTerm(value: string): boolean {
   return value.length >= MIN_RELATED_TERM_LENGTH;
+}
+
+function isMatchableStudyItem(item: StudyItem): item is StudyItem {
+  const candidate = item as Partial<Record<keyof StudyItem, unknown>> | null;
+  return (
+    !!candidate &&
+    typeof candidate === 'object' &&
+    typeof candidate.id === 'string' &&
+    typeof candidate.answer === 'string' &&
+    typeof candidate.questionText === 'string'
+  );
 }
